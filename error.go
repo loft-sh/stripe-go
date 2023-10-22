@@ -34,6 +34,7 @@ const (
 	ErrorCodeAlipayUpgradeRequired                                       ErrorCode = "alipay_upgrade_required"
 	ErrorCodeAmountTooLarge                                              ErrorCode = "amount_too_large"
 	ErrorCodeAmountTooSmall                                              ErrorCode = "amount_too_small"
+	ErrorCodeApplicationFeesNotAllowed                                   ErrorCode = "application_fees_not_allowed"
 	ErrorCodeAuthenticationRequired                                      ErrorCode = "authentication_required"
 	ErrorCodeBalanceInsufficient                                         ErrorCode = "balance_insufficient"
 	ErrorCodeBankAccountBadRoutingNumbers                                ErrorCode = "bank_account_bad_routing_numbers"
@@ -49,7 +50,6 @@ const (
 	ErrorCodeCaptureUnauthorizedPayment                                  ErrorCode = "capture_unauthorized_payment"
 	ErrorCodeCardDeclineRateLimitExceeded                                ErrorCode = "card_decline_rate_limit_exceeded"
 	ErrorCodeCardDeclined                                                ErrorCode = "card_declined"
-	ErrorCodeCardDeclinedRateLimitExceeded                               ErrorCode = "card_decline_rate_limit_exceeded"
 	ErrorCodeCardholderPhoneNumberRequired                               ErrorCode = "cardholder_phone_number_required"
 	ErrorCodeChargeAlreadyCaptured                                       ErrorCode = "charge_already_captured"
 	ErrorCodeChargeAlreadyRefunded                                       ErrorCode = "charge_already_refunded"
@@ -67,6 +67,9 @@ const (
 	ErrorCodeDebitNotAuthorized                                          ErrorCode = "debit_not_authorized"
 	ErrorCodeEmailInvalid                                                ErrorCode = "email_invalid"
 	ErrorCodeExpiredCard                                                 ErrorCode = "expired_card"
+	ErrorCodeGiftCardBalanceInsufficient                                 ErrorCode = "gift_card_balance_insufficient"
+	ErrorCodeGiftCardCodeExists                                          ErrorCode = "gift_card_code_exists"
+	ErrorCodeGiftCardInactive                                            ErrorCode = "gift_card_inactive"
 	ErrorCodeIdempotencyKeyInUse                                         ErrorCode = "idempotency_key_in_use"
 	ErrorCodeIncorrectAddress                                            ErrorCode = "incorrect_address"
 	ErrorCodeIncorrectCVC                                                ErrorCode = "incorrect_cvc"
@@ -87,13 +90,12 @@ const (
 	ErrorCodeInvalidExpiryYear                                           ErrorCode = "invalid_expiry_year"
 	ErrorCodeInvalidNumber                                               ErrorCode = "invalid_number"
 	ErrorCodeInvalidSourceUsage                                          ErrorCode = "invalid_source_usage"
-	ErrorCodeInvalidSwipeData                                            ErrorCode = "invalid_swipe_data"
+	ErrorCodeInvalidTaxLocation                                          ErrorCode = "invalid_tax_location"
 	ErrorCodeInvoiceNoCustomerLineItems                                  ErrorCode = "invoice_no_customer_line_items"
 	ErrorCodeInvoiceNoPaymentMethodTypes                                 ErrorCode = "invoice_no_payment_method_types"
 	ErrorCodeInvoiceNoSubscriptionLineItems                              ErrorCode = "invoice_no_subscription_line_items"
 	ErrorCodeInvoiceNotEditable                                          ErrorCode = "invoice_not_editable"
 	ErrorCodeInvoiceOnBehalfOfNotEditable                                ErrorCode = "invoice_on_behalf_of_not_editable"
-	ErrorCodeInvoicePamentIntentRequiresAction                           ErrorCode = "invoice_payment_intent_requires_action"
 	ErrorCodeInvoicePaymentIntentRequiresAction                          ErrorCode = "invoice_payment_intent_requires_action"
 	ErrorCodeInvoiceUpcomingNone                                         ErrorCode = "invoice_upcoming_none"
 	ErrorCodeLivemodeMismatch                                            ErrorCode = "livemode_mismatch"
@@ -158,7 +160,7 @@ const (
 	ErrorCodeSEPAUnsupportedAccount                                      ErrorCode = "sepa_unsupported_account"
 	ErrorCodeSKUInactive                                                 ErrorCode = "sku_inactive"
 	ErrorCodeSecretKeyRequired                                           ErrorCode = "secret_key_required"
-	ErrorCodeSepaUnsupportedAccount                                      ErrorCode = "sepa_unsupported_account"
+	ErrorCodeSensitiveDataAccessExpired                                  ErrorCode = "sensitive_data_access_expired"
 	ErrorCodeSetupAttemptFailed                                          ErrorCode = "setup_attempt_failed"
 	ErrorCodeSetupIntentAuthenticationFailure                            ErrorCode = "setup_intent_authentication_failure"
 	ErrorCodeSetupIntentInvalidParameter                                 ErrorCode = "setup_intent_invalid_parameter"
@@ -166,9 +168,9 @@ const (
 	ErrorCodeSetupIntentSetupAttemptExpired                              ErrorCode = "setup_intent_setup_attempt_expired"
 	ErrorCodeSetupIntentUnexpectedState                                  ErrorCode = "setup_intent_unexpected_state"
 	ErrorCodeShippingCalculationFailed                                   ErrorCode = "shipping_calculation_failed"
-	ErrorCodeSkuInactive                                                 ErrorCode = "sku_inactive"
 	ErrorCodeStateUnsupported                                            ErrorCode = "state_unsupported"
 	ErrorCodeStatusTransitionInvalid                                     ErrorCode = "status_transition_invalid"
+	ErrorCodeStripeTaxInactive                                           ErrorCode = "stripe_tax_inactive"
 	ErrorCodeTLSVersionUnsupported                                       ErrorCode = "tls_version_unsupported"
 	ErrorCodeTaxIDInvalid                                                ErrorCode = "tax_id_invalid"
 	ErrorCodeTaxesCalculationFailed                                      ErrorCode = "taxes_calculation_failed"
@@ -182,7 +184,6 @@ const (
 	ErrorCodeTransferSourceBalanceParametersMismatch                     ErrorCode = "transfer_source_balance_parameters_mismatch"
 	ErrorCodeTransfersNotAllowed                                         ErrorCode = "transfers_not_allowed"
 	ErrorCodeURLInvalid                                                  ErrorCode = "url_invalid"
-	ErrorCodeinstantPayoutsLimitExceeded                                 ErrorCode = "instant_payouts_limit_exceeded"
 )
 
 // The end of the section generated from our OpenAPI spec
@@ -257,6 +258,7 @@ type Error struct {
 
 	HTTPStatusCode    int               `json:"status,omitempty"`
 	Msg               string            `json:"message"`
+	DeveloperMsg      string            `json:"developer_message,omitempty"`
 	Param             string            `json:"param,omitempty"`
 	PaymentIntent     *PaymentIntent    `json:"payment_intent,omitempty"`
 	PaymentMethod     *PaymentMethod    `json:"payment_method,omitempty"`

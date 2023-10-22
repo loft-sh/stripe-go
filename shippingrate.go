@@ -71,6 +71,13 @@ type ShippingRateListParams struct {
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Only return shipping rates for the given currency.
 	Currency *string `form:"currency"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *ShippingRateListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // The upper bound of the estimated range. If empty, represents no upper bound i.e., infinite.
@@ -124,14 +131,32 @@ type ShippingRateParams struct {
 	DeliveryEstimate *ShippingRateDeliveryEstimateParams `form:"delivery_estimate"`
 	// The name of the shipping rate, meant to be displayable to the customer. This will appear on CheckoutSessions.
 	DisplayName *string `form:"display_name"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Describes a fixed amount to charge for shipping. Must be present if type is `fixed_amount`.
 	FixedAmount *ShippingRateFixedAmountParams `form:"fixed_amount"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// Specifies whether the rate is considered inclusive of taxes or exclusive of taxes. One of `inclusive`, `exclusive`, or `unspecified`.
 	TaxBehavior *string `form:"tax_behavior"`
 	// A [tax code](https://stripe.com/docs/tax/tax-categories) ID. The Shipping tax code is `txcd_92010001`.
 	TaxCode *string `form:"tax_code"`
 	// The type of calculation to use on the shipping rate. Can only be `fixed_amount` for now.
 	Type *string `form:"type"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *ShippingRateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *ShippingRateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // The upper bound of the estimated range. If empty, represents no upper bound i.e., infinite.
@@ -174,9 +199,8 @@ type ShippingRateFixedAmount struct {
 	CurrencyOptions map[string]*ShippingRateFixedAmountCurrencyOptions `json:"currency_options"`
 }
 
-// Shipping rates describe the price of shipping presented to your customers and can be
-// applied to [Checkout Sessions](https://stripe.com/docs/payments/checkout/shipping)
-// and [Orders](https://stripe.com/docs/orders/shipping) to collect shipping costs.
+// Shipping rates describe the price of shipping presented to your customers and
+// applied to a purchase. For more information, see [Charge for shipping](https://stripe.com/docs/payments/during-payment/charge-shipping).
 type ShippingRate struct {
 	APIResource
 	// Whether the shipping rate can be used for new purchases. Defaults to `true`.

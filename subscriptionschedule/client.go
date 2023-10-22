@@ -10,8 +10,8 @@ package subscriptionschedule
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v74"
-	"github.com/stripe/stripe-go/v74/form"
+	stripe "github.com/stripe/stripe-go/v76"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
 // Client is used to invoke /subscription_schedules APIs.
@@ -59,6 +59,19 @@ func Update(id string, params *stripe.SubscriptionScheduleParams) (*stripe.Subsc
 // Update updates a subscription schedule's properties.
 func (c Client) Update(id string, params *stripe.SubscriptionScheduleParams) (*stripe.SubscriptionSchedule, error) {
 	path := stripe.FormatURLPath("/v1/subscription_schedules/%s", id)
+	subscriptionschedule := &stripe.SubscriptionSchedule{}
+	err := c.B.Call(http.MethodPost, path, c.Key, params, subscriptionschedule)
+	return subscriptionschedule, err
+}
+
+// Amend is the method for the `POST /v1/subscription_schedules/{schedule}/amend` API.
+func Amend(id string, params *stripe.SubscriptionScheduleAmendParams) (*stripe.SubscriptionSchedule, error) {
+	return getC().Amend(id, params)
+}
+
+// Amend is the method for the `POST /v1/subscription_schedules/{schedule}/amend` API.
+func (c Client) Amend(id string, params *stripe.SubscriptionScheduleAmendParams) (*stripe.SubscriptionSchedule, error) {
+	path := stripe.FormatURLPath("/v1/subscription_schedules/%s/amend", id)
 	subscriptionschedule := &stripe.SubscriptionSchedule{}
 	err := c.B.Call(http.MethodPost, path, c.Key, params, subscriptionschedule)
 	return subscriptionschedule, err

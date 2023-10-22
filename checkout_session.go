@@ -6,6 +6,15 @@
 
 package stripe
 
+// Type of the account referenced.
+type CheckoutSessionAutomaticTaxLiabilityType string
+
+// List of values that CheckoutSessionAutomaticTaxLiabilityType can take
+const (
+	CheckoutSessionAutomaticTaxLiabilityTypeAccount CheckoutSessionAutomaticTaxLiabilityType = "account"
+	CheckoutSessionAutomaticTaxLiabilityTypeSelf    CheckoutSessionAutomaticTaxLiabilityType = "self"
+)
+
 // The status of the most recent automated tax calculation for this session.
 type CheckoutSessionAutomaticTaxStatus string
 
@@ -100,15 +109,18 @@ const (
 	CheckoutSessionCustomerDetailsTaxExemptReverse CheckoutSessionCustomerDetailsTaxExempt = "reverse"
 )
 
-// The type of the tax ID, one of `eu_vat`, `br_cnpj`, `br_cpf`, `eu_oss_vat`, `gb_vat`, `nz_gst`, `au_abn`, `au_arn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ru_kpp`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `my_sst`, `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, `my_frp`, `il_vat`, `ge_vat`, `ua_vat`, `is_vat`, `bg_uic`, `hu_tin`, `si_tin`, `ke_pin`, `tr_tin`, `eg_tin`, `ph_tin`, or `unknown`
+// The type of the tax ID, one of `ad_nrt`, `ar_cuit`, `eu_vat`, `bo_tin`, `br_cnpj`, `br_cpf`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eu_oss_vat`, `pe_ruc`, `ro_tin`, `rs_pib`, `sv_nit`, `uy_ruc`, `ve_rif`, `vn_tin`, `gb_vat`, `nz_gst`, `au_abn`, `au_arn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ru_kpp`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `my_sst`, `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, `my_frp`, `il_vat`, `ge_vat`, `ua_vat`, `is_vat`, `bg_uic`, `hu_tin`, `si_tin`, `ke_pin`, `tr_tin`, `eg_tin`, `ph_tin`, or `unknown`
 type CheckoutSessionCustomerDetailsTaxIDType string
 
 // List of values that CheckoutSessionCustomerDetailsTaxIDType can take
 const (
+	CheckoutSessionCustomerDetailsTaxIDTypeADNRT    CheckoutSessionCustomerDetailsTaxIDType = "ad_nrt"
 	CheckoutSessionCustomerDetailsTaxIDTypeAETRN    CheckoutSessionCustomerDetailsTaxIDType = "ae_trn"
+	CheckoutSessionCustomerDetailsTaxIDTypeARCUIT   CheckoutSessionCustomerDetailsTaxIDType = "ar_cuit"
 	CheckoutSessionCustomerDetailsTaxIDTypeAUABN    CheckoutSessionCustomerDetailsTaxIDType = "au_abn"
 	CheckoutSessionCustomerDetailsTaxIDTypeAUARN    CheckoutSessionCustomerDetailsTaxIDType = "au_arn"
 	CheckoutSessionCustomerDetailsTaxIDTypeBGUIC    CheckoutSessionCustomerDetailsTaxIDType = "bg_uic"
+	CheckoutSessionCustomerDetailsTaxIDTypeBOTIN    CheckoutSessionCustomerDetailsTaxIDType = "bo_tin"
 	CheckoutSessionCustomerDetailsTaxIDTypeBRCNPJ   CheckoutSessionCustomerDetailsTaxIDType = "br_cnpj"
 	CheckoutSessionCustomerDetailsTaxIDTypeBRCPF    CheckoutSessionCustomerDetailsTaxIDType = "br_cpf"
 	CheckoutSessionCustomerDetailsTaxIDTypeCABN     CheckoutSessionCustomerDetailsTaxIDType = "ca_bn"
@@ -119,6 +131,11 @@ const (
 	CheckoutSessionCustomerDetailsTaxIDTypeCAQST    CheckoutSessionCustomerDetailsTaxIDType = "ca_qst"
 	CheckoutSessionCustomerDetailsTaxIDTypeCHVAT    CheckoutSessionCustomerDetailsTaxIDType = "ch_vat"
 	CheckoutSessionCustomerDetailsTaxIDTypeCLTIN    CheckoutSessionCustomerDetailsTaxIDType = "cl_tin"
+	CheckoutSessionCustomerDetailsTaxIDTypeCNTIN    CheckoutSessionCustomerDetailsTaxIDType = "cn_tin"
+	CheckoutSessionCustomerDetailsTaxIDTypeCONIT    CheckoutSessionCustomerDetailsTaxIDType = "co_nit"
+	CheckoutSessionCustomerDetailsTaxIDTypeCRTIN    CheckoutSessionCustomerDetailsTaxIDType = "cr_tin"
+	CheckoutSessionCustomerDetailsTaxIDTypeDORCN    CheckoutSessionCustomerDetailsTaxIDType = "do_rcn"
+	CheckoutSessionCustomerDetailsTaxIDTypeECRUC    CheckoutSessionCustomerDetailsTaxIDType = "ec_ruc"
 	CheckoutSessionCustomerDetailsTaxIDTypeEGTIN    CheckoutSessionCustomerDetailsTaxIDType = "eg_tin"
 	CheckoutSessionCustomerDetailsTaxIDTypeESCIF    CheckoutSessionCustomerDetailsTaxIDType = "es_cif"
 	CheckoutSessionCustomerDetailsTaxIDTypeEUOSSVAT CheckoutSessionCustomerDetailsTaxIDType = "eu_oss_vat"
@@ -143,20 +160,36 @@ const (
 	CheckoutSessionCustomerDetailsTaxIDTypeMYSST    CheckoutSessionCustomerDetailsTaxIDType = "my_sst"
 	CheckoutSessionCustomerDetailsTaxIDTypeNOVAT    CheckoutSessionCustomerDetailsTaxIDType = "no_vat"
 	CheckoutSessionCustomerDetailsTaxIDTypeNZGST    CheckoutSessionCustomerDetailsTaxIDType = "nz_gst"
+	CheckoutSessionCustomerDetailsTaxIDTypePERUC    CheckoutSessionCustomerDetailsTaxIDType = "pe_ruc"
 	CheckoutSessionCustomerDetailsTaxIDTypePHTIN    CheckoutSessionCustomerDetailsTaxIDType = "ph_tin"
+	CheckoutSessionCustomerDetailsTaxIDTypeROTIN    CheckoutSessionCustomerDetailsTaxIDType = "ro_tin"
+	CheckoutSessionCustomerDetailsTaxIDTypeRSPIB    CheckoutSessionCustomerDetailsTaxIDType = "rs_pib"
 	CheckoutSessionCustomerDetailsTaxIDTypeRUINN    CheckoutSessionCustomerDetailsTaxIDType = "ru_inn"
 	CheckoutSessionCustomerDetailsTaxIDTypeRUKPP    CheckoutSessionCustomerDetailsTaxIDType = "ru_kpp"
 	CheckoutSessionCustomerDetailsTaxIDTypeSAVAT    CheckoutSessionCustomerDetailsTaxIDType = "sa_vat"
 	CheckoutSessionCustomerDetailsTaxIDTypeSGGST    CheckoutSessionCustomerDetailsTaxIDType = "sg_gst"
 	CheckoutSessionCustomerDetailsTaxIDTypeSGUEN    CheckoutSessionCustomerDetailsTaxIDType = "sg_uen"
 	CheckoutSessionCustomerDetailsTaxIDTypeSITIN    CheckoutSessionCustomerDetailsTaxIDType = "si_tin"
+	CheckoutSessionCustomerDetailsTaxIDTypeSVNIT    CheckoutSessionCustomerDetailsTaxIDType = "sv_nit"
 	CheckoutSessionCustomerDetailsTaxIDTypeTHVAT    CheckoutSessionCustomerDetailsTaxIDType = "th_vat"
 	CheckoutSessionCustomerDetailsTaxIDTypeTRTIN    CheckoutSessionCustomerDetailsTaxIDType = "tr_tin"
 	CheckoutSessionCustomerDetailsTaxIDTypeTWVAT    CheckoutSessionCustomerDetailsTaxIDType = "tw_vat"
 	CheckoutSessionCustomerDetailsTaxIDTypeUAVAT    CheckoutSessionCustomerDetailsTaxIDType = "ua_vat"
 	CheckoutSessionCustomerDetailsTaxIDTypeUnknown  CheckoutSessionCustomerDetailsTaxIDType = "unknown"
 	CheckoutSessionCustomerDetailsTaxIDTypeUSEIN    CheckoutSessionCustomerDetailsTaxIDType = "us_ein"
+	CheckoutSessionCustomerDetailsTaxIDTypeUYRUC    CheckoutSessionCustomerDetailsTaxIDType = "uy_ruc"
+	CheckoutSessionCustomerDetailsTaxIDTypeVERIF    CheckoutSessionCustomerDetailsTaxIDType = "ve_rif"
+	CheckoutSessionCustomerDetailsTaxIDTypeVNTIN    CheckoutSessionCustomerDetailsTaxIDType = "vn_tin"
 	CheckoutSessionCustomerDetailsTaxIDTypeZAVAT    CheckoutSessionCustomerDetailsTaxIDType = "za_vat"
+)
+
+// Type of the account referenced.
+type CheckoutSessionInvoiceCreationInvoiceDataIssuerType string
+
+// List of values that CheckoutSessionInvoiceCreationInvoiceDataIssuerType can take
+const (
+	CheckoutSessionInvoiceCreationInvoiceDataIssuerTypeAccount CheckoutSessionInvoiceCreationInvoiceDataIssuerType = "account"
+	CheckoutSessionInvoiceCreationInvoiceDataIssuerTypeSelf    CheckoutSessionInvoiceCreationInvoiceDataIssuerType = "self"
 )
 
 // The mode of the Checkout Session.
@@ -553,6 +586,15 @@ const (
 	CheckoutSessionPaymentMethodOptionsSofortSetupFutureUsageNone CheckoutSessionPaymentMethodOptionsSofortSetupFutureUsage = "none"
 )
 
+// Settings for configuring manual entry of account details.
+type CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode string
+
+// List of values that CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode can take
+const (
+	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryModeAutomatic CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode = "automatic"
+	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryModeCustom    CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode = "custom"
+)
+
 // The list of permissions to request. The `payment_method` permission must be included.
 type CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission string
 
@@ -562,6 +604,17 @@ const (
 	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionOwnership     CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "ownership"
 	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionPaymentMethod CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "payment_method"
 	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionTransactions  CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "transactions"
+)
+
+// Data features requested to be retrieved upon account creation.
+type CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch string
+
+// List of values that CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch can take
+const (
+	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchBalances         CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "balances"
+	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchInferredBalances CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "inferred_balances"
+	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchOwnership        CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "ownership"
+	CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchTransactions     CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "transactions"
 )
 
 // Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -598,29 +651,36 @@ const (
 	CheckoutSessionPaymentStatusUnpaid            CheckoutSessionPaymentStatus = "unpaid"
 )
 
+// Applies to Checkout Sessions with `ui_mode: embedded`. By default, Stripe will always redirect to your return_url after a successful confirmation. If you set `redirect_on_completion: 'if_required'`, then we will only redirect if your user chooses a redirect-based payment method.
+type CheckoutSessionRedirectOnCompletion string
+
+// List of values that CheckoutSessionRedirectOnCompletion can take
+const (
+	CheckoutSessionRedirectOnCompletionAlways     CheckoutSessionRedirectOnCompletion = "always"
+	CheckoutSessionRedirectOnCompletionIfRequired CheckoutSessionRedirectOnCompletion = "if_required"
+	CheckoutSessionRedirectOnCompletionNever      CheckoutSessionRedirectOnCompletion = "never"
+)
+
 // The reasoning behind this tax, for example, if the product is tax exempt. The possible values for this field may be extended as new tax rules are supported.
 type CheckoutSessionShippingCostTaxTaxabilityReason string
 
 // List of values that CheckoutSessionShippingCostTaxTaxabilityReason can take
 const (
-	CheckoutSessionShippingCostTaxTaxabilityReasonCustomerExempt          CheckoutSessionShippingCostTaxTaxabilityReason = "customer_exempt"
-	CheckoutSessionShippingCostTaxTaxabilityReasonExcludedTerritory       CheckoutSessionShippingCostTaxTaxabilityReason = "excluded_territory"
-	CheckoutSessionShippingCostTaxTaxabilityReasonJurisdictionUnsupported CheckoutSessionShippingCostTaxTaxabilityReason = "jurisdiction_unsupported"
-	CheckoutSessionShippingCostTaxTaxabilityReasonNotCollecting           CheckoutSessionShippingCostTaxTaxabilityReason = "not_collecting"
-	CheckoutSessionShippingCostTaxTaxabilityReasonNotSubjectToTax         CheckoutSessionShippingCostTaxTaxabilityReason = "not_subject_to_tax"
-	CheckoutSessionShippingCostTaxTaxabilityReasonNotSupported            CheckoutSessionShippingCostTaxTaxabilityReason = "not_supported"
-	CheckoutSessionShippingCostTaxTaxabilityReasonPortionProductExempt    CheckoutSessionShippingCostTaxTaxabilityReason = "portion_product_exempt"
-	CheckoutSessionShippingCostTaxTaxabilityReasonPortionReducedRated     CheckoutSessionShippingCostTaxTaxabilityReason = "portion_reduced_rated"
-	CheckoutSessionShippingCostTaxTaxabilityReasonPortionStandardRated    CheckoutSessionShippingCostTaxTaxabilityReason = "portion_standard_rated"
-	CheckoutSessionShippingCostTaxTaxabilityReasonProductExempt           CheckoutSessionShippingCostTaxTaxabilityReason = "product_exempt"
-	CheckoutSessionShippingCostTaxTaxabilityReasonProductExemptHoliday    CheckoutSessionShippingCostTaxTaxabilityReason = "product_exempt_holiday"
-	CheckoutSessionShippingCostTaxTaxabilityReasonProportionallyRated     CheckoutSessionShippingCostTaxTaxabilityReason = "proportionally_rated"
-	CheckoutSessionShippingCostTaxTaxabilityReasonReducedRated            CheckoutSessionShippingCostTaxTaxabilityReason = "reduced_rated"
-	CheckoutSessionShippingCostTaxTaxabilityReasonReverseCharge           CheckoutSessionShippingCostTaxTaxabilityReason = "reverse_charge"
-	CheckoutSessionShippingCostTaxTaxabilityReasonStandardRated           CheckoutSessionShippingCostTaxTaxabilityReason = "standard_rated"
-	CheckoutSessionShippingCostTaxTaxabilityReasonTaxableBasisReduced     CheckoutSessionShippingCostTaxTaxabilityReason = "taxable_basis_reduced"
-	CheckoutSessionShippingCostTaxTaxabilityReasonVATExempt               CheckoutSessionShippingCostTaxTaxabilityReason = "vat_exempt"
-	CheckoutSessionShippingCostTaxTaxabilityReasonZeroRated               CheckoutSessionShippingCostTaxTaxabilityReason = "zero_rated"
+	CheckoutSessionShippingCostTaxTaxabilityReasonCustomerExempt       CheckoutSessionShippingCostTaxTaxabilityReason = "customer_exempt"
+	CheckoutSessionShippingCostTaxTaxabilityReasonNotCollecting        CheckoutSessionShippingCostTaxTaxabilityReason = "not_collecting"
+	CheckoutSessionShippingCostTaxTaxabilityReasonNotSubjectToTax      CheckoutSessionShippingCostTaxTaxabilityReason = "not_subject_to_tax"
+	CheckoutSessionShippingCostTaxTaxabilityReasonNotSupported         CheckoutSessionShippingCostTaxTaxabilityReason = "not_supported"
+	CheckoutSessionShippingCostTaxTaxabilityReasonPortionProductExempt CheckoutSessionShippingCostTaxTaxabilityReason = "portion_product_exempt"
+	CheckoutSessionShippingCostTaxTaxabilityReasonPortionReducedRated  CheckoutSessionShippingCostTaxTaxabilityReason = "portion_reduced_rated"
+	CheckoutSessionShippingCostTaxTaxabilityReasonPortionStandardRated CheckoutSessionShippingCostTaxTaxabilityReason = "portion_standard_rated"
+	CheckoutSessionShippingCostTaxTaxabilityReasonProductExempt        CheckoutSessionShippingCostTaxTaxabilityReason = "product_exempt"
+	CheckoutSessionShippingCostTaxTaxabilityReasonProductExemptHoliday CheckoutSessionShippingCostTaxTaxabilityReason = "product_exempt_holiday"
+	CheckoutSessionShippingCostTaxTaxabilityReasonProportionallyRated  CheckoutSessionShippingCostTaxTaxabilityReason = "proportionally_rated"
+	CheckoutSessionShippingCostTaxTaxabilityReasonReducedRated         CheckoutSessionShippingCostTaxTaxabilityReason = "reduced_rated"
+	CheckoutSessionShippingCostTaxTaxabilityReasonReverseCharge        CheckoutSessionShippingCostTaxTaxabilityReason = "reverse_charge"
+	CheckoutSessionShippingCostTaxTaxabilityReasonStandardRated        CheckoutSessionShippingCostTaxTaxabilityReason = "standard_rated"
+	CheckoutSessionShippingCostTaxTaxabilityReasonTaxableBasisReduced  CheckoutSessionShippingCostTaxTaxabilityReason = "taxable_basis_reduced"
+	CheckoutSessionShippingCostTaxTaxabilityReasonZeroRated            CheckoutSessionShippingCostTaxTaxabilityReason = "zero_rated"
 )
 
 // The status of the Checkout Session, one of `open`, `complete`, or `expired`.
@@ -652,24 +712,30 @@ type CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason string
 
 // List of values that CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason can take
 const (
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonCustomerExempt          CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "customer_exempt"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonExcludedTerritory       CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "excluded_territory"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonJurisdictionUnsupported CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "jurisdiction_unsupported"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonNotCollecting           CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "not_collecting"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonNotSubjectToTax         CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "not_subject_to_tax"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonNotSupported            CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "not_supported"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonPortionProductExempt    CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "portion_product_exempt"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonPortionReducedRated     CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "portion_reduced_rated"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonPortionStandardRated    CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "portion_standard_rated"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonProductExempt           CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "product_exempt"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonProductExemptHoliday    CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "product_exempt_holiday"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonProportionallyRated     CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "proportionally_rated"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonReducedRated            CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "reduced_rated"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonReverseCharge           CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "reverse_charge"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonStandardRated           CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "standard_rated"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonTaxableBasisReduced     CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "taxable_basis_reduced"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonVATExempt               CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "vat_exempt"
-	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonZeroRated               CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "zero_rated"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonCustomerExempt       CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "customer_exempt"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonNotCollecting        CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "not_collecting"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonNotSubjectToTax      CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "not_subject_to_tax"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonNotSupported         CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "not_supported"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonPortionProductExempt CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "portion_product_exempt"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonPortionReducedRated  CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "portion_reduced_rated"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonPortionStandardRated CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "portion_standard_rated"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonProductExempt        CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "product_exempt"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonProductExemptHoliday CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "product_exempt_holiday"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonProportionallyRated  CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "proportionally_rated"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonReducedRated         CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "reduced_rated"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonReverseCharge        CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "reverse_charge"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonStandardRated        CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "standard_rated"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonTaxableBasisReduced  CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "taxable_basis_reduced"
+	CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReasonZeroRated            CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason = "zero_rated"
+)
+
+// The UI mode of the Session. Can be `hosted` (default) or `embedded`.
+type CheckoutSessionUIMode string
+
+// List of values that CheckoutSessionUIMode can take
+const (
+	CheckoutSessionUIModeEmbedded CheckoutSessionUIMode = "embedded"
+	CheckoutSessionUIModeHosted   CheckoutSessionUIMode = "hosted"
 )
 
 // Only return the Checkout Sessions for the Customer details specified.
@@ -685,12 +751,19 @@ type CheckoutSessionListParams struct {
 	Customer *string `form:"customer"`
 	// Only return the Checkout Sessions for the Customer details specified.
 	CustomerDetails *CheckoutSessionListCustomerDetailsParams `form:"customer_details"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Only return the Checkout Session for the PaymentIntent specified.
 	PaymentIntent *string `form:"payment_intent"`
 	// Only return the Checkout Sessions for the Payment Link specified.
 	PaymentLink *string `form:"payment_link"`
 	// Only return the Checkout Session for the subscription specified.
 	Subscription *string `form:"subscription"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CheckoutSessionListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Configure a Checkout Session that can be used to recover an expired session.
@@ -709,10 +782,20 @@ type CheckoutSessionAfterExpirationParams struct {
 	Recovery *CheckoutSessionAfterExpirationRecoveryParams `form:"recovery"`
 }
 
+// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+type CheckoutSessionAutomaticTaxLiabilityParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
 // Settings for automatic tax lookup for this session and resulting payments, invoices, and subscriptions.
 type CheckoutSessionAutomaticTaxParams struct {
 	// Set to true to enable automatic taxes.
 	Enabled *bool `form:"enabled"`
+	// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+	Liability *CheckoutSessionAutomaticTaxLiabilityParams `form:"liability"`
 }
 
 // Configure fields for the Checkout Session to gather active consent from customers.
@@ -784,13 +867,19 @@ type CheckoutSessionCustomFieldParams struct {
 
 // Custom text that should be displayed alongside shipping address collection.
 type CheckoutSessionCustomTextShippingAddressParams struct {
-	// Text may be up to 1000 characters in length.
+	// Text may be up to 1200 characters in length.
 	Message *string `form:"message"`
 }
 
 // Custom text that should be displayed alongside the payment confirmation button.
 type CheckoutSessionCustomTextSubmitParams struct {
-	// Text may be up to 1000 characters in length.
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Custom text that should be displayed in place of the default terms of service agreement text.
+type CheckoutSessionCustomTextTermsOfServiceAcceptanceParams struct {
+	// Text may be up to 1200 characters in length.
 	Message *string `form:"message"`
 }
 
@@ -800,6 +889,8 @@ type CheckoutSessionCustomTextParams struct {
 	ShippingAddress *CheckoutSessionCustomTextShippingAddressParams `form:"shipping_address"`
 	// Custom text that should be displayed alongside the payment confirmation button.
 	Submit *CheckoutSessionCustomTextSubmitParams `form:"submit"`
+	// Custom text that should be displayed in place of the default terms of service agreement text.
+	TermsOfServiceAcceptance *CheckoutSessionCustomTextTermsOfServiceAcceptanceParams `form:"terms_of_service_acceptance"`
 }
 
 // Controls what fields on Customer can be updated by the Checkout Session. Can only be provided when `customer` is provided.
@@ -830,6 +921,14 @@ type CheckoutSessionInvoiceCreationInvoiceDataCustomFieldParams struct {
 	Value *string `form:"value"`
 }
 
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type CheckoutSessionInvoiceCreationInvoiceDataIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
 // Default options for invoice PDF rendering for this customer.
 type CheckoutSessionInvoiceCreationInvoiceDataRenderingOptionsParams struct {
 	// How line-item prices and amounts will be displayed with respect to tax on invoice PDFs. One of `exclude_tax` or `include_inclusive_tax`. `include_inclusive_tax` will include inclusive tax (and exclude exclusive tax) in invoice PDF amounts. `exclude_tax` will exclude all tax (inclusive and exclusive alike) from invoice PDF amounts.
@@ -846,10 +945,21 @@ type CheckoutSessionInvoiceCreationInvoiceDataParams struct {
 	Description *string `form:"description"`
 	// Default footer to be displayed on invoices for this customer.
 	Footer *string `form:"footer"`
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *CheckoutSessionInvoiceCreationInvoiceDataIssuerParams `form:"issuer"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
 	Metadata map[string]string `form:"metadata"`
 	// Default options for invoice PDF rendering for this customer.
 	RenderingOptions *CheckoutSessionInvoiceCreationInvoiceDataRenderingOptionsParams `form:"rendering_options"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CheckoutSessionInvoiceCreationInvoiceDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Generate a post-purchase Invoice for one-time payments.
@@ -882,6 +992,15 @@ type CheckoutSessionLineItemPriceDataProductDataParams struct {
 	Name *string `form:"name"`
 	// A [tax code](https://stripe.com/docs/tax/tax-categories) ID.
 	TaxCode *string `form:"tax_code"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CheckoutSessionLineItemPriceDataProductDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // The recurring components of a price such as `interval` and `interval_count`.
@@ -991,8 +1110,17 @@ type CheckoutSessionPaymentIntentDataParams struct {
 	// The parameters used to automatically create a Transfer when the payment succeeds.
 	// For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).
 	TransferData *CheckoutSessionPaymentIntentDataTransferDataParams `form:"transfer_data"`
-	// A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.
+	// A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/connect/separate-charges-and-transfers) for details.
 	TransferGroup *string `form:"transfer_group"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CheckoutSessionPaymentIntentDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Additional fields for Mandate creation
@@ -1146,7 +1274,7 @@ type CheckoutSessionPaymentMethodOptionsCustomerBalanceBankTransferParams struct
 	//
 	// Permitted values include: `sort_code`, `zengin`, `iban`, or `spei`.
 	RequestedAddressTypes []*string `form:"requested_address_types"`
-	// The list of bank transfer types that this PaymentIntent is allowed to use for funding. Permitted values include: `us_bank_account`, `eu_bank_account`, `id_bank_account`, `gb_bank_account`, `jp_bank_account`, `mx_bank_account`, `eu_bank_transfer`, `gb_bank_transfer`, `id_bank_transfer`, `jp_bank_transfer`, `mx_bank_transfer`, or `us_bank_transfer`.
+	// The list of bank transfer types that this PaymentIntent is allowed to use for funding.
 	Type *string `form:"type"`
 }
 
@@ -1288,6 +1416,8 @@ type CheckoutSessionPaymentMethodOptionsPaypalParams struct {
 	PreferredLocale *string `form:"preferred_locale"`
 	// A reference of the PayPal transaction visible to customer which is mapped to PayPal's invoice ID. This must be a globally unique ID if you have configured in your PayPal settings to block multiple payments per invoice ID.
 	Reference *string `form:"reference"`
+	// A reference of the PayPal transaction visible to customer which is mapped to PayPal's invoice ID. This must be a globally unique ID if you have configured in your PayPal settings to block multiple payments per invoice ID.
+	ReferenceID *string `form:"reference_id"`
 	// The risk correlation ID for an on-session payment using a saved PayPal payment method.
 	RiskCorrelationID *string `form:"risk_correlation_id"`
 	// Indicates that you intend to make future payments with this PaymentIntent's payment method.
@@ -1330,6 +1460,8 @@ type CheckoutSessionPaymentMethodOptionsSofortParams struct {
 type CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsParams struct {
 	// The list of permissions to request. If this parameter is passed, the `payment_method` permission must be included. Valid permissions include: `balances`, `ownership`, `payment_method`, and `transactions`.
 	Permissions []*string `form:"permissions"`
+	// List of data features that you would like to retrieve upon account creation.
+	Prefetch []*string `form:"prefetch"`
 }
 
 // contains details about the Us Bank Account payment method options.
@@ -1439,6 +1571,15 @@ type CheckoutSessionSetupIntentDataParams struct {
 	OnBehalfOf *string `form:"on_behalf_of"`
 }
 
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CheckoutSessionSetupIntentDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // When set, provides configuration for Checkout to collect a shipping address from a customer.
 type CheckoutSessionShippingAddressCollectionParams struct {
 	// An array of two-letter ISO country codes representing which countries Checkout should provide as options for
@@ -1506,7 +1647,16 @@ type CheckoutSessionShippingOptionShippingRateDataParams struct {
 	Type *string `form:"type"`
 }
 
-// The shipping rate options to apply to this Session.
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CheckoutSessionShippingOptionShippingRateDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// The shipping rate options to apply to this Session. Up to a maximum of 5.
 type CheckoutSessionShippingOptionParams struct {
 	// The ID of the Shipping Rate to use for this shipping option.
 	ShippingRate *string `form:"shipping_rate"`
@@ -1514,9 +1664,23 @@ type CheckoutSessionShippingOptionParams struct {
 	ShippingRateData *CheckoutSessionShippingOptionShippingRateDataParams `form:"shipping_rate_data"`
 }
 
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type CheckoutSessionSubscriptionDataInvoiceSettingsIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// All invoices will be billed using the specified settings.
+type CheckoutSessionSubscriptionDataInvoiceSettingsParams struct {
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *CheckoutSessionSubscriptionDataInvoiceSettingsIssuerParams `form:"issuer"`
+}
+
 // If specified, the funds from the subscription's invoices will be transferred to the destination and the ID of the resulting transfers will be found on the resulting charges.
 type CheckoutSessionSubscriptionDataTransferDataParams struct {
-	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the destination account. By default, the entire amount is transferred to the destination.
+	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice total that will be transferred to the destination account. By default, the entire amount is transferred to the destination.
 	AmountPercent *float64 `form:"amount_percent"`
 	// ID of an existing, connected Stripe account.
 	Destination *string `form:"destination"`
@@ -1536,20 +1700,20 @@ type CheckoutSessionSubscriptionDataTrialSettingsParams struct {
 
 // A subset of parameters to be passed to subscription creation for Checkout Sessions in `subscription` mode.
 type CheckoutSessionSubscriptionDataParams struct {
-	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the application owner's Stripe account. To use an application fee percent, the request must be made on behalf of another account, using the `Stripe-Account` header or an OAuth key. For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
+	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice total that will be transferred to the application owner's Stripe account. To use an application fee percent, the request must be made on behalf of another account, using the `Stripe-Account` header or an OAuth key. For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
 	ApplicationFeePercent *float64 `form:"application_fee_percent"`
 	// A future timestamp to anchor the subscription's billing cycle for new subscriptions.
 	BillingCycleAnchor *int64 `form:"billing_cycle_anchor"`
-	// The ID of the coupon to apply to this subscription. A coupon applied to a subscription will only affect invoices created for that particular subscription.
-	Coupon *string `form:"coupon"`
 	// The tax rates that will apply to any subscription item that does not have
 	// `tax_rates` set. Invoices created will have their `default_tax_rates` populated
 	// from the subscription.
 	DefaultTaxRates []*string `form:"default_tax_rates"`
 	// The subscription's description, meant to be displayable to the customer.
 	// Use this field to optionally store an explanation of the subscription
-	// for rendering in Stripe hosted surfaces.
+	// for rendering in the [customer portal](https://stripe.com/docs/customer-management).
 	Description *string `form:"description"`
+	// All invoices will be billed using the specified settings.
+	InvoiceSettings *CheckoutSessionSubscriptionDataInvoiceSettingsParams `form:"invoice_settings"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
 	Metadata map[string]string `form:"metadata"`
 	// The account on behalf of which to charge, for each of the subscription's invoices.
@@ -1562,13 +1726,20 @@ type CheckoutSessionSubscriptionDataParams struct {
 	// will get before being charged for the first time. Has to be at least
 	// 48 hours in the future.
 	TrialEnd *int64 `form:"trial_end"`
-	// Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` on `subscription_data` is preferred. Defaults to `false`.
-	TrialFromPlan *bool `form:"trial_from_plan"`
 	// Integer representing the number of trial period days before the
 	// customer is charged for the first time. Has to be at least 1.
 	TrialPeriodDays *int64 `form:"trial_period_days"`
 	// Settings related to subscription trials.
 	TrialSettings *CheckoutSessionSubscriptionDataTrialSettingsParams `form:"trial_settings"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CheckoutSessionSubscriptionDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Controls tax ID collection settings for the session.
@@ -1606,7 +1777,7 @@ type CheckoutSessionParams struct {
 	// If the Customer already has a valid [email](https://stripe.com/docs/api/customers/object#customer_object-email) set, the email will be prefilled and not editable in Checkout.
 	// If the Customer does not have a valid `email`, Checkout will set the email entered during the session on the Customer.
 	//
-	// If blank for Checkout Sessions in `payment` or `subscription` mode, Checkout will create a new Customer object based on information provided during the payment flow.
+	// If blank for Checkout Sessions in `subscription` mode or with `customer_creation` set as `always` in `payment` mode, Checkout will create a new Customer object based on information provided during the payment flow.
 	//
 	// You can set [`payment_intent_data.setup_future_usage`](https://stripe.com/docs/api/checkout/sessions/create#create_checkout_session-payment_intent_data-setup_future_usage) to have Checkout automatically attach the payment method to the Customer you pass in for future reuse.
 	Customer *string `form:"customer"`
@@ -1634,6 +1805,8 @@ type CheckoutSessionParams struct {
 	CustomText *CheckoutSessionCustomTextParams `form:"custom_text"`
 	// The coupon or promotion code to apply to this Session. Currently, only up to one may be specified.
 	Discounts []*CheckoutSessionDiscountParams `form:"discounts"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The Epoch time in seconds at which the Checkout Session will expire. It can be anywhere from 30 minutes to 24 hours after Checkout Session creation. By default, this value is 24 hours from creation.
 	ExpiresAt *int64 `form:"expires_at"`
 	// Generate a post-purchase Invoice for one-time payments.
@@ -1646,6 +1819,8 @@ type CheckoutSessionParams struct {
 	LineItems []*CheckoutSessionLineItemParams `form:"line_items"`
 	// The IETF language tag of the locale Checkout is displayed in. If blank or `auto`, the browser's locale is used.
 	Locale *string `form:"locale"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// The mode of the Checkout Session. Pass `subscription` if the Checkout Session includes at least one recurring item.
 	Mode *string `form:"mode"`
 	// A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.
@@ -1657,6 +1832,8 @@ type CheckoutSessionParams struct {
 	//
 	// If you'd like information on how to collect a payment method outside of Checkout, read the guide on configuring [subscriptions with a free trial](https://stripe.com/docs/payments/checkout/free-trials).
 	PaymentMethodCollection *string `form:"payment_method_collection"`
+	// The ID of the payment method configuration to use with this Checkout session.
+	PaymentMethodConfiguration *string `form:"payment_method_configuration"`
 	// Payment-method-specific configuration.
 	PaymentMethodOptions *CheckoutSessionPaymentMethodOptionsParams `form:"payment_method_options"`
 	// A list of the types of payment methods (e.g., `card`) this Checkout Session can accept.
@@ -1676,14 +1853,18 @@ type CheckoutSessionParams struct {
 	// We recommend that you review your privacy policy and check with your legal contacts
 	// before using this feature. Learn more about [collecting phone numbers with Checkout](https://stripe.com/docs/payments/checkout/phone-numbers).
 	PhoneNumberCollection *CheckoutSessionPhoneNumberCollectionParams `form:"phone_number_collection"`
+	// This parameter applies to `ui_mode: embedded`. By default, Stripe will always redirect to your return_url after a successful confirmation. If you set `redirect_on_completion: 'if_required'`, then we will only redirect if your user chooses a redirect-based payment method.
+	RedirectOnCompletion *string `form:"redirect_on_completion"`
+	// The URL to redirect your customer back to after they authenticate or cancel their payment on the
+	// payment method's app or site. This parameter is required if ui_mode is `embedded`
+	// and redirect-based payment methods are enabled on the session.
+	ReturnURL *string `form:"return_url"`
 	// A subset of parameters to be passed to SetupIntent creation for Checkout Sessions in `setup` mode.
 	SetupIntentData *CheckoutSessionSetupIntentDataParams `form:"setup_intent_data"`
 	// When set, provides configuration for Checkout to collect a shipping address from a customer.
 	ShippingAddressCollection *CheckoutSessionShippingAddressCollectionParams `form:"shipping_address_collection"`
-	// The shipping rate options to apply to this Session.
+	// The shipping rate options to apply to this Session. Up to a maximum of 5.
 	ShippingOptions []*CheckoutSessionShippingOptionParams `form:"shipping_options"`
-	// [Deprecated] The shipping rate to apply to this Session. Only up to one may be specified.
-	ShippingRates []*string `form:"shipping_rates"`
 	// Describes the type of transaction being performed by Checkout in order to customize
 	// relevant text on the page, such as the submit button. `submit_type` can only be
 	// specified on Checkout Sessions in `payment` mode, but not Checkout Sessions
@@ -1698,12 +1879,35 @@ type CheckoutSessionParams struct {
 	SuccessURL *string `form:"success_url"`
 	// Controls tax ID collection settings for the session.
 	TaxIDCollection *CheckoutSessionTaxIDCollectionParams `form:"tax_id_collection"`
+	// `ui_mode` can be `hosted` or `embedded`. The default is `hosted`.
+	UIMode *string `form:"ui_mode"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CheckoutSessionParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CheckoutSessionParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // When retrieving a Checkout Session, there is an includable line_items property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
 type CheckoutSessionListLineItemsParams struct {
 	ListParams `form:"*"`
 	Session    *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CheckoutSessionListLineItemsParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // A Session can be expired when it is in one of these statuses: open
@@ -1711,6 +1915,13 @@ type CheckoutSessionListLineItemsParams struct {
 // After it expires, a customer can't complete a Session and customers loading the Session see a message saying the Session is expired.
 type CheckoutSessionExpireParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CheckoutSessionExpireParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // When set, configuration used to recover the Checkout Session on expiry.
@@ -1732,9 +1943,19 @@ type CheckoutSessionAfterExpiration struct {
 	// When set, configuration used to recover the Checkout Session on expiry.
 	Recovery *CheckoutSessionAfterExpirationRecovery `json:"recovery"`
 }
+
+// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+type CheckoutSessionAutomaticTaxLiability struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *Account `json:"account"`
+	// Type of the account referenced.
+	Type CheckoutSessionAutomaticTaxLiabilityType `json:"type"`
+}
 type CheckoutSessionAutomaticTax struct {
 	// Indicates whether automatic tax is enabled for the session
 	Enabled bool `json:"enabled"`
+	// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+	Liability *CheckoutSessionAutomaticTaxLiability `json:"liability"`
 	// The status of the most recent automated tax calculation for this session.
 	Status CheckoutSessionAutomaticTaxStatus `json:"status"`
 }
@@ -1777,8 +1998,6 @@ type CheckoutSessionCustomFieldDropdownOption struct {
 	// The value for this option, not displayed to the customer, used by your integration to reconcile the option selected by the customer. Must be unique to this option, alphanumeric, and up to 100 characters.
 	Value string `json:"value"`
 }
-
-// Configuration for `type=dropdown` fields.
 type CheckoutSessionCustomFieldDropdown struct {
 	// The options available for the customer to select. Up to 200 options allowed.
 	Options []*CheckoutSessionCustomFieldDropdownOption `json:"options"`
@@ -1791,8 +2010,6 @@ type CheckoutSessionCustomFieldLabel struct {
 	// The type of the label.
 	Type CheckoutSessionCustomFieldLabelType `json:"type"`
 }
-
-// Configuration for `type=numeric` fields.
 type CheckoutSessionCustomFieldNumeric struct {
 	// The maximum character length constraint for the customer's input.
 	MaximumLength int64 `json:"maximum_length"`
@@ -1801,8 +2018,6 @@ type CheckoutSessionCustomFieldNumeric struct {
 	// The value entered by the customer, containing only digits.
 	Value string `json:"value"`
 }
-
-// Configuration for `type=text` fields.
 type CheckoutSessionCustomFieldText struct {
 	// The maximum character length constraint for the customer's input.
 	MaximumLength int64 `json:"maximum_length"`
@@ -1814,30 +2029,33 @@ type CheckoutSessionCustomFieldText struct {
 
 // Collect additional information from your customer using custom fields. Up to 2 fields are supported.
 type CheckoutSessionCustomField struct {
-	// Configuration for `type=dropdown` fields.
 	Dropdown *CheckoutSessionCustomFieldDropdown `json:"dropdown"`
 	// String of your choice that your integration can use to reconcile this field. Must be unique to this field, alphanumeric, and up to 200 characters.
-	Key   string                           `json:"key"`
-	Label *CheckoutSessionCustomFieldLabel `json:"label"`
-	// Configuration for `type=numeric` fields.
+	Key     string                             `json:"key"`
+	Label   *CheckoutSessionCustomFieldLabel   `json:"label"`
 	Numeric *CheckoutSessionCustomFieldNumeric `json:"numeric"`
 	// Whether the customer is required to complete the field before completing the Checkout Session. Defaults to `false`.
-	Optional bool `json:"optional"`
-	// Configuration for `type=text` fields.
-	Text *CheckoutSessionCustomFieldText `json:"text"`
+	Optional bool                            `json:"optional"`
+	Text     *CheckoutSessionCustomFieldText `json:"text"`
 	// The type of the field.
 	Type CheckoutSessionCustomFieldType `json:"type"`
 }
 
 // Custom text that should be displayed alongside shipping address collection.
 type CheckoutSessionCustomTextShippingAddress struct {
-	// Text may be up to 1000 characters in length.
+	// Text may be up to 1200 characters in length.
 	Message string `json:"message"`
 }
 
 // Custom text that should be displayed alongside the payment confirmation button.
 type CheckoutSessionCustomTextSubmit struct {
-	// Text may be up to 1000 characters in length.
+	// Text may be up to 1200 characters in length.
+	Message string `json:"message"`
+}
+
+// Custom text that should be displayed in place of the default terms of service agreement text.
+type CheckoutSessionCustomTextTermsOfServiceAcceptance struct {
+	// Text may be up to 1200 characters in length.
 	Message string `json:"message"`
 }
 type CheckoutSessionCustomText struct {
@@ -1845,11 +2063,13 @@ type CheckoutSessionCustomText struct {
 	ShippingAddress *CheckoutSessionCustomTextShippingAddress `json:"shipping_address"`
 	// Custom text that should be displayed alongside the payment confirmation button.
 	Submit *CheckoutSessionCustomTextSubmit `json:"submit"`
+	// Custom text that should be displayed in place of the default terms of service agreement text.
+	TermsOfServiceAcceptance *CheckoutSessionCustomTextTermsOfServiceAcceptance `json:"terms_of_service_acceptance"`
 }
 
 // The customer's tax IDs after a completed Checkout Session.
 type CheckoutSessionCustomerDetailsTaxID struct {
-	// The type of the tax ID, one of `eu_vat`, `br_cnpj`, `br_cpf`, `eu_oss_vat`, `gb_vat`, `nz_gst`, `au_abn`, `au_arn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ru_kpp`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `my_sst`, `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, `my_frp`, `il_vat`, `ge_vat`, `ua_vat`, `is_vat`, `bg_uic`, `hu_tin`, `si_tin`, `ke_pin`, `tr_tin`, `eg_tin`, `ph_tin`, or `unknown`
+	// The type of the tax ID, one of `ad_nrt`, `ar_cuit`, `eu_vat`, `bo_tin`, `br_cnpj`, `br_cpf`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eu_oss_vat`, `pe_ruc`, `ro_tin`, `rs_pib`, `sv_nit`, `uy_ruc`, `ve_rif`, `vn_tin`, `gb_vat`, `nz_gst`, `au_abn`, `au_arn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ru_kpp`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `my_sst`, `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, `my_frp`, `il_vat`, `ge_vat`, `ua_vat`, `is_vat`, `bg_uic`, `hu_tin`, `si_tin`, `ke_pin`, `tr_tin`, `eg_tin`, `ph_tin`, or `unknown`
 	Type CheckoutSessionCustomerDetailsTaxIDType `json:"type"`
 	// The value of the tax ID.
 	Value string `json:"value"`
@@ -1880,6 +2100,14 @@ type CheckoutSessionInvoiceCreationInvoiceDataCustomField struct {
 	Value string `json:"value"`
 }
 
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type CheckoutSessionInvoiceCreationInvoiceDataIssuer struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *Account `json:"account"`
+	// Type of the account referenced.
+	Type CheckoutSessionInvoiceCreationInvoiceDataIssuerType `json:"type"`
+}
+
 // Options for invoice PDF rendering.
 type CheckoutSessionInvoiceCreationInvoiceDataRenderingOptions struct {
 	// How line-item prices and amounts will be displayed with respect to tax on invoice PDFs.
@@ -1894,6 +2122,8 @@ type CheckoutSessionInvoiceCreationInvoiceData struct {
 	Description string `json:"description"`
 	// Footer displayed on the invoice.
 	Footer string `json:"footer"`
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *CheckoutSessionInvoiceCreationInvoiceDataIssuer `json:"issuer"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
 	Metadata map[string]string `json:"metadata"`
 	// Options for invoice PDF rendering.
@@ -1905,6 +2135,14 @@ type CheckoutSessionInvoiceCreation struct {
 	// Indicates whether invoice creation is enabled for the Checkout Session.
 	Enabled     bool                                       `json:"enabled"`
 	InvoiceData *CheckoutSessionInvoiceCreationInvoiceData `json:"invoice_data"`
+}
+
+// Information about the payment method configuration used for this Checkout session if using dynamic payment methods.
+type CheckoutSessionPaymentMethodConfigurationDetails struct {
+	// ID of the payment method configuration used.
+	ID string `json:"id"`
+	// ID of the parent payment method configuration used.
+	Parent string `json:"parent"`
 }
 type CheckoutSessionPaymentMethodOptionsACSSDebitMandateOptions struct {
 	// A URL for custom mandate text
@@ -2149,9 +2387,16 @@ type CheckoutSessionPaymentMethodOptionsSofort struct {
 	// When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
 	SetupFutureUsage CheckoutSessionPaymentMethodOptionsSofortSetupFutureUsage `json:"setup_future_usage"`
 }
+type CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntry struct {
+	// Settings for configuring manual entry of account details.
+	Mode CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode `json:"mode"`
+}
 type CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnections struct {
+	ManualEntry *CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntry `json:"manual_entry"`
 	// The list of permissions to request. The `payment_method` permission must be included.
 	Permissions []CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission `json:"permissions"`
+	// Data features requested to be retrieved upon account creation.
+	Prefetch []CheckoutSessionPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch `json:"prefetch"`
 	// For webview integrations only. Upon completing OAuth login in the native browser, the user will be redirected to this URL to return to your app.
 	ReturnURL string `json:"return_url"`
 }
@@ -2218,7 +2463,7 @@ type CheckoutSessionShippingCostTax struct {
 	Rate *TaxRate `json:"rate"`
 	// The reasoning behind this tax, for example, if the product is tax exempt. The possible values for this field may be extended as new tax rules are supported.
 	TaxabilityReason CheckoutSessionShippingCostTaxTaxabilityReason `json:"taxability_reason"`
-	// The amount on which tax is calculated, in %s.
+	// The amount on which tax is calculated, in cents (or local equivalent).
 	TaxableAmount int64 `json:"taxable_amount"`
 }
 
@@ -2269,7 +2514,7 @@ type CheckoutSessionTotalDetailsBreakdownTax struct {
 	Rate *TaxRate `json:"rate"`
 	// The reasoning behind this tax, for example, if the product is tax exempt. The possible values for this field may be extended as new tax rules are supported.
 	TaxabilityReason CheckoutSessionTotalDetailsBreakdownTaxTaxabilityReason `json:"taxability_reason"`
-	// The amount on which tax is calculated, in %s.
+	// The amount on which tax is calculated, in cents (or local equivalent).
 	TaxableAmount int64 `json:"taxable_amount"`
 }
 type CheckoutSessionTotalDetailsBreakdown struct {
@@ -2323,6 +2568,8 @@ type CheckoutSession struct {
 	// customer ID, a cart ID, or similar, and can be used to reconcile the
 	// Session with your internal systems.
 	ClientReferenceID string `json:"client_reference_id"`
+	// Client secret to be used when initializing Stripe.js embedded checkout.
+	ClientSecret string `json:"client_secret"`
 	// Results of `consent_collection` for this session.
 	Consent *CheckoutSessionConsent `json:"consent"`
 	// When set, provides configuration for the Checkout Session to gather active consent from customers.
@@ -2334,7 +2581,7 @@ type CheckoutSession struct {
 	// Currency conversion details for automatic currency conversion sessions
 	CurrencyConversion *CheckoutSessionCurrencyConversion `json:"currency_conversion"`
 	// The ID of the customer for this Session.
-	// For Checkout Sessions in `payment` or `subscription` mode, Checkout
+	// For Checkout Sessions in `subscription` mode or Checkout Sessions with `customer_creation` set as `always` in `payment` mode, Checkout
 	// will create a new customer object based on information provided
 	// during the payment flow unless an existing customer was provided when
 	// the Session was created.
@@ -2378,6 +2625,8 @@ type CheckoutSession struct {
 	PaymentLink *PaymentLink `json:"payment_link"`
 	// Configure whether a Checkout Session should collect a payment method.
 	PaymentMethodCollection CheckoutSessionPaymentMethodCollection `json:"payment_method_collection"`
+	// Information about the payment method configuration used for this Checkout session if using dynamic payment methods.
+	PaymentMethodConfigurationDetails *CheckoutSessionPaymentMethodConfigurationDetails `json:"payment_method_configuration_details"`
 	// Payment-method-specific configuration for the PaymentIntent or SetupIntent of this CheckoutSession.
 	PaymentMethodOptions *CheckoutSessionPaymentMethodOptions `json:"payment_method_options"`
 	// A list of the types of payment methods (e.g. card) this Checkout
@@ -2389,6 +2638,10 @@ type CheckoutSession struct {
 	PhoneNumberCollection *CheckoutSessionPhoneNumberCollection `json:"phone_number_collection"`
 	// The ID of the original expired Checkout Session that triggered the recovery flow.
 	RecoveredFrom string `json:"recovered_from"`
+	// Applies to Checkout Sessions with `ui_mode: embedded`. By default, Stripe will always redirect to your return_url after a successful confirmation. If you set `redirect_on_completion: 'if_required'`, then we will only redirect if your user chooses a redirect-based payment method.
+	RedirectOnCompletion CheckoutSessionRedirectOnCompletion `json:"redirect_on_completion"`
+	// Applies to Checkout Sessions with `ui_mode: embedded`. The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site.
+	ReturnURL string `json:"return_url"`
 	// The ID of the SetupIntent for Checkout Sessions in `setup` mode.
 	SetupIntent *SetupIntent `json:"setup_intent"`
 	// When set, provides configuration for Checkout to collect a shipping address from a customer.
@@ -2414,6 +2667,8 @@ type CheckoutSession struct {
 	TaxIDCollection *CheckoutSessionTaxIDCollection `json:"tax_id_collection"`
 	// Tax and discount details for the computed total amount.
 	TotalDetails *CheckoutSessionTotalDetails `json:"total_details"`
+	// The UI mode of the Session. Can be `hosted` (default) or `embedded`.
+	UIMode CheckoutSessionUIMode `json:"ui_mode"`
 	// The URL to the Checkout Session. Redirect customers to this URL to take them to Checkout. If you're using [Custom Domains](https://stripe.com/docs/payments/checkout/custom-domains), the URL will use your subdomain. Otherwise, it'll use `checkout.stripe.com.`
 	// This value is only present when the session is active.
 	URL string `json:"url"`

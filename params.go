@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/stripe/stripe-go/v74/form"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
 //
@@ -108,10 +108,11 @@ type ListParams struct {
 	// key or query the state of the API.
 	Context context.Context `form:"-"`
 
-	EndingBefore *string   `form:"ending_before"`
-	Expand       []*string `form:"expand"`
-	Filters      Filters   `form:"*"`
-	Limit        *int64    `form:"limit"`
+	EndingBefore *string `form:"ending_before"`
+	// Deprecated: Please use Expand in the surrounding struct instead.
+	Expand  []*string `form:"expand"`
+	Filters Filters   `form:"*"`
+	Limit   *int64    `form:"limit"`
 
 	// Single specifies whether this is a single page iterator. By default,
 	// listing through an iterator will automatically grab additional pages as
@@ -128,7 +129,8 @@ type ListParams struct {
 	StripeAccount *string `form:"-"` // Passed as header
 }
 
-// AddExpand appends a new field to expand.
+// AddExpand on the embedded ListParams struct is deprecated.
+// Deprecated: please use AddExpand on the surrounding struct instead.
 func (p *ListParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
@@ -170,6 +172,11 @@ type ListParamsContainer interface {
 	GetListParams() *ListParams
 }
 
+type APIMode string
+
+var PreviewAPIMode APIMode = "preview"
+var StandardAPIMode APIMode = "standard"
+
 // Params is the structure that contains the common properties
 // of any *Params structure.
 type Params struct {
@@ -183,14 +190,17 @@ type Params struct {
 	// key or query the state of the API.
 	Context context.Context `form:"-"`
 
+	// Deprecated: please use Expand in the surrounding struct instead.
 	Expand []*string    `form:"expand"`
 	Extra  *ExtraValues `form:"*"`
 
 	// Headers may be used to provide extra header lines on the HTTP request.
 	Headers http.Header `form:"-"`
 
-	IdempotencyKey *string           `form:"-"` // Passed as header
-	Metadata       map[string]string `form:"metadata"`
+	IdempotencyKey *string `form:"-"` // Passed as header
+
+	// Deprecated: Please use Metadata in the surrounding struct instead.
+	Metadata map[string]string `form:"metadata"`
 
 	// StripeAccount may contain the ID of a connected account. By including
 	// this field, the request is made as if it originated from the connected
@@ -199,7 +209,8 @@ type Params struct {
 	StripeAccount *string `form:"-"` // Passed as header
 }
 
-// AddExpand appends a new field to expand.
+// AddExpand on the Params embedded struct is deprecated.
+// Deprecated: please use Expand in the surrounding struct instead.
 func (p *Params) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
@@ -213,7 +224,8 @@ func (p *Params) AddExtra(key, value string) {
 	p.Extra.Add(key, value)
 }
 
-// AddMetadata adds a new key-value pair to the Metadata.
+// AddMetadata on the Params embedded struct is deprecated.
+// Deprecated: please use .AddMetadata of the surrounding struct.
 func (p *Params) AddMetadata(key, value string) {
 	if p.Metadata == nil {
 		p.Metadata = make(map[string]string)
@@ -244,6 +256,12 @@ func (p *Params) SetStripeAccount(val string) {
 // its implementation of this interface.
 type ParamsContainer interface {
 	GetParams() *Params
+}
+
+type RawParams struct {
+	Params        `form:"*"`
+	APIMode       APIMode `form:"-"`
+	StripeContext string  `form:"-"`
 }
 
 // RangeQueryParams are a set of generic request parameters that are used on

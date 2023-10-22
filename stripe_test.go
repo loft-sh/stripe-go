@@ -47,6 +47,31 @@ func TestBearerAuth(t *testing.T) {
 	assert.Equal(t, "Bearer "+key, req.Header.Get("Authorization"))
 }
 
+func TestApiVersion(t *testing.T) {
+	c := GetBackend(APIBackend).(*BackendImplementation)
+	key := "apiKey"
+
+	req, err := c.NewRequest("", "", key, "", nil)
+	assert.NoError(t, err)
+
+	assert.Equal(t, APIVersion, req.Header.Get("Stripe-Version"))
+}
+
+func TestCanSetApiVersion(t *testing.T) {
+	oldVersion := APIVersion
+	APIVersion = "12-23-2022; feature_in_beta=v3"
+
+	c := GetBackend(APIBackend).(*BackendImplementation)
+	key := "apiKey"
+
+	req, err := c.NewRequest("", "", key, "", nil)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "12-23-2022; feature_in_beta=v3", req.Header.Get("Stripe-Version"))
+
+	APIVersion = oldVersion
+}
+
 func TestContext(t *testing.T) {
 	c := GetBackend(APIBackend).(*BackendImplementation)
 	p := &Params{Context: context.Background()}
@@ -968,6 +993,60 @@ func TestStripeAccount(t *testing.T) {
 	assert.Equal(t, "acct_123", req.Header.Get("Stripe-Account"))
 }
 
+func TestErrorOnDuplicateMetadata(t *testing.T) {
+	c := GetBackend(APIBackend).(*BackendImplementation)
+	type myParams struct {
+		Params   `form:"*"`
+		Metadata map[string]string `form:"metadata"`
+	}
+
+	metadata := map[string]string{"foo": "bar"}
+	resource := APIResource{}
+	err := c.Call("POST", "/v1/customers", "sk_test_xyz", &myParams{}, &resource)
+	assert.NoError(t, err)
+
+	err =
+		c.Call("POST", "/v1/customers", "sk_test_xyz", &myParams{Metadata: metadata}, &resource)
+	assert.NoError(t, err)
+
+	err =
+		c.Call("POST", "/v1/customers", "sk_test_xyz", &myParams{Params: Params{Metadata: metadata}}, &resource)
+	assert.NoError(t, err)
+
+	err =
+		c.Call("POST", "/v1/customers", "sk_test_xyz", &myParams{Metadata: metadata, Params: Params{Metadata: metadata}}, &resource)
+	assert.Errorf(t, err, "You cannot specify both the (deprecated) .Params.Metadata and .Metadata in myParams")
+}
+
+func TestErrorOnDuplicateExpand(t *testing.T) {
+	c := GetBackend(APIBackend).(*BackendImplementation)
+	type myParams struct {
+		Params `form:"*"`
+		Expand []*string `form:"expand"`
+	}
+
+	expand := []*string{String("foo"), String("bar")}
+	resource := APIResource{}
+	err := c.Call("POST", "/v1/customers", "sk_test_xyz", &myParams{}, &resource)
+	assert.NoError(t, err)
+
+	err =
+		c.Call("POST", "/v1/customers", "sk_test_xyz", &myParams{Expand: expand}, &resource)
+	assert.NoError(t, err)
+
+	err =
+		c.Call("POST", "/v1/customers", "sk_test_xyz", &myParams{
+			Params: Params{Expand: expand},
+		}, &resource)
+	assert.NoError(t, err)
+
+	err =
+		c.Call("POST", "/v1/customers", "sk_test_xyz", &myParams{
+			Expand: expand, Params: Params{Expand: expand}}, &resource)
+
+	assert.Errorf(t, err, "You cannot specify both the (deprecated) .Params.Expand and .Expand in myParams")
+}
+
 func TestUnmarshalJSONVerbose(t *testing.T) {
 	type testServerResponse struct {
 		Message string `json:"message"`
@@ -1237,6 +1316,220 @@ func TestBoolSlice(t *testing.T) {
 	assert.Equal(t, false, *result[3])
 
 	assert.Equal(t, 0, len(BoolSlice(nil)))
+}
+
+func TestRawRequestPreviewPost(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	var stripeVersion string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		stripeVersion = r.Header.Get("Stripe-Version")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	type MyXYZ struct {
+		DEF string `json:"def"`
+	}
+	type MyABC struct {
+		Object string `json:"object"`
+		XYZ    MyXYZ  `json:"xyz"`
+	}
+	params := &RawParams{Params: Params{}, APIMode: PreviewAPIMode}
+	response, err := backend.RawRequest(http.MethodPost, "/v1/abcs", "sk_test_xyz", `{"foo":"myFoo","bar":{"baz":false}}`, params)
+	assert.NoError(t, err)
+	myABC := &MyABC{}
+	assert.Nil(t, params.Headers)
+	assert.Equal(t, `{"foo":"myFoo","bar":{"baz":false}}`, body)
+	assert.Equal(t, `/v1/abcs`, path)
+	assert.Equal(t, `POST`, method)
+	assert.Equal(t, `application/json`, contentType)
+	assert.Equal(t, previewVersion, stripeVersion)
+	err = json.Unmarshal(response.RawJSON, myABC)
+	assert.NoError(t, err)
+	assert.Equal(t, "jih", myABC.XYZ.DEF)
+	assert.Equal(t, "abc", myABC.Object)
+	defer testServer.Close()
+}
+
+func TestRawRequestStandardGet(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	var stripeVersion string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		stripeVersion = r.Header.Get("Stripe-Version")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	_, err := backend.RawRequest(http.MethodGet, "/v1/abc?foo=myFoo", "sk_test_xyz", ``, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, ``, body)
+	assert.Equal(t, `/v1/abc?foo=myFoo`, path)
+	assert.Equal(t, `GET`, method)
+	assert.Equal(t, `application/x-www-form-urlencoded`, contentType)
+	assert.Equal(t, apiVersion, stripeVersion)
+	assert.NoError(t, err)
+	defer testServer.Close()
+}
+
+func TestRawRequestStandardPost(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	var stripeVersion string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		stripeVersion = r.Header.Get("Stripe-Version")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	_, err := backend.RawRequest(http.MethodPost, "/v1/abc", "sk_test_xyz", `foo=myFoo`, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, `foo=myFoo`, body)
+	assert.Equal(t, `/v1/abc`, path)
+	assert.Equal(t, `POST`, method)
+	assert.Equal(t, `application/x-www-form-urlencoded`, contentType)
+	assert.Equal(t, apiVersion, stripeVersion)
+	assert.NoError(t, err)
+	defer testServer.Close()
+}
+
+func TestRawRequestPreviewGet(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	var stripeVersion string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		stripeVersion = r.Header.Get("Stripe-Version")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	params := &RawParams{Params: Params{}, APIMode: PreviewAPIMode}
+	_, err := backend.RawRequest(http.MethodGet, "/v1/abc?foo=myFoo", "sk_test_xyz", ``, params)
+	assert.NoError(t, err)
+	assert.Equal(t, ``, body)
+	assert.Equal(t, `/v1/abc?foo=myFoo`, path)
+	assert.Equal(t, `GET`, method)
+	assert.Equal(t, `application/json`, contentType)
+	assert.Equal(t, previewVersion, stripeVersion)
+	assert.NoError(t, err)
+	defer testServer.Close()
+}
+
+func TestRawRequestWithAdditionalHeaders(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	var stripeVersion string
+	var fooHeader string
+	var stripeContext string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		stripeVersion = r.Header.Get("Stripe-Version")
+		fooHeader = r.Header.Get("foo")
+		stripeContext = r.Header.Get("Stripe-Context")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	headers := http.Header{}
+	headers.Set("foo", "bar")
+	params := &RawParams{Params: Params{Headers: headers}, APIMode: PreviewAPIMode, StripeContext: "acct_123"}
+
+	_, err := backend.RawRequest(http.MethodPost, "/v1/abc", "sk_test_xyz", `{"foo":"myFoo"}`, params)
+	assert.NoError(t, err)
+	assert.Equal(t, `{"foo":"myFoo"}`, body)
+	assert.Equal(t, `/v1/abc`, path)
+	assert.Equal(t, `POST`, method)
+	assert.Equal(t, `application/json`, contentType)
+	assert.Equal(t, previewVersion, stripeVersion)
+	assert.Equal(t, `bar`, fooHeader)
+	assert.Equal(t, `acct_123`, stripeContext)
+	assert.NoError(t, err)
+	defer testServer.Close()
 }
 
 //

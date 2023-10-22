@@ -16,6 +16,14 @@ const (
 	BillingPortalSessionFlowAfterCompletionTypeRedirect           BillingPortalSessionFlowAfterCompletionType = "redirect"
 )
 
+// Type of retention strategy that will be used.
+type BillingPortalSessionFlowSubscriptionCancelRetentionType string
+
+// List of values that BillingPortalSessionFlowSubscriptionCancelRetentionType can take
+const (
+	BillingPortalSessionFlowSubscriptionCancelRetentionTypeCouponOffer BillingPortalSessionFlowSubscriptionCancelRetentionType = "coupon_offer"
+)
+
 // Type of flow that the customer will go through.
 type BillingPortalSessionFlowType string
 
@@ -49,8 +57,24 @@ type BillingPortalSessionFlowDataAfterCompletionParams struct {
 	Type *string `form:"type"`
 }
 
+// Configuration when `retention.type=coupon_offer`.
+type BillingPortalSessionFlowDataSubscriptionCancelRetentionCouponOfferParams struct {
+	// The ID of the coupon to be offered.
+	Coupon *string `form:"coupon"`
+}
+
+// Specify a retention strategy to be used in the cancellation flow.
+type BillingPortalSessionFlowDataSubscriptionCancelRetentionParams struct {
+	// Configuration when `retention.type=coupon_offer`.
+	CouponOffer *BillingPortalSessionFlowDataSubscriptionCancelRetentionCouponOfferParams `form:"coupon_offer"`
+	// Type of retention strategy to use with the customer.
+	Type *string `form:"type"`
+}
+
 // Configuration when `flow_data.type=subscription_cancel`.
 type BillingPortalSessionFlowDataSubscriptionCancelParams struct {
+	// Specify a retention strategy to be used in the cancellation flow.
+	Retention *BillingPortalSessionFlowDataSubscriptionCancelRetentionParams `form:"retention"`
 	// The ID of the subscription to be canceled.
 	Subscription *string `form:"subscription"`
 }
@@ -110,14 +134,21 @@ type BillingPortalSessionParams struct {
 	Configuration *string `form:"configuration"`
 	// The ID of an existing customer.
 	Customer *string `form:"customer"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Information about a specific flow for the customer to go through. See the [docs](https://stripe.com/docs/customer-management/portal-deep-links) to learn more about using customer portal deep links and flows.
 	FlowData *BillingPortalSessionFlowDataParams `form:"flow_data"`
-	// The IETF language tag of the locale Customer Portal is displayed in. If blank or auto, the customer's `preferred_locales` or browser's locale is used.
+	// The IETF language tag of the locale customer portal is displayed in. If blank or auto, the customer's `preferred_locales` or browser's locale is used.
 	Locale *string `form:"locale"`
 	// The `on_behalf_of` account to use for this session. When specified, only subscriptions and invoices with this `on_behalf_of` account appear in the portal. For more information, see the [docs](https://stripe.com/docs/connect/separate-charges-and-transfers#on-behalf-of). Use the [Accounts API](https://stripe.com/docs/api/accounts/object#account_object-settings-branding) to modify the `on_behalf_of` account's branding settings, which the portal displays.
 	OnBehalfOf *string `form:"on_behalf_of"`
 	// The default URL to redirect customers to when they click on the portal's link to return to your website.
 	ReturnURL *string `form:"return_url"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *BillingPortalSessionParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Configuration when `after_completion.type=hosted_confirmation`.
@@ -140,8 +171,24 @@ type BillingPortalSessionFlowAfterCompletion struct {
 	Type BillingPortalSessionFlowAfterCompletionType `json:"type"`
 }
 
+// Configuration when `retention.type=coupon_offer`.
+type BillingPortalSessionFlowSubscriptionCancelRetentionCouponOffer struct {
+	// The ID of the coupon to be offered.
+	Coupon string `json:"coupon"`
+}
+
+// Specify a retention strategy to be used in the cancellation flow.
+type BillingPortalSessionFlowSubscriptionCancelRetention struct {
+	// Configuration when `retention.type=coupon_offer`.
+	CouponOffer *BillingPortalSessionFlowSubscriptionCancelRetentionCouponOffer `json:"coupon_offer"`
+	// Type of retention strategy that will be used.
+	Type BillingPortalSessionFlowSubscriptionCancelRetentionType `json:"type"`
+}
+
 // Configuration when `flow.type=subscription_cancel`.
 type BillingPortalSessionFlowSubscriptionCancel struct {
+	// Specify a retention strategy to be used in the cancellation flow.
+	Retention *BillingPortalSessionFlowSubscriptionCancelRetention `json:"retention"`
 	// The ID of the subscription to be canceled.
 	Subscription string `json:"subscription"`
 }
@@ -164,7 +211,7 @@ type BillingPortalSessionFlowSubscriptionUpdateConfirmDiscount struct {
 type BillingPortalSessionFlowSubscriptionUpdateConfirmItem struct {
 	// The ID of the [subscription item](https://stripe.com/docs/api/subscriptions/object#subscription_object-items-data-id) to be updated.
 	ID string `json:"id"`
-	// The price the customer should subscribe to through this flow. The price must also be included in the configuration's [`features.subscription_update.products`](docs/api/customer_portal/configuration#portal_configuration_object-features-subscription_update-products).
+	// The price the customer should subscribe to through this flow. The price must also be included in the configuration's [`features.subscription_update.products`](https://stripe.com/docs/api/customer_portal/configuration#portal_configuration_object-features-subscription_update-products).
 	Price string `json:"price"`
 	// [Quantity](https://stripe.com/docs/subscriptions/quantities) for this item that the customer should subscribe to through this flow.
 	Quantity int64 `json:"quantity"`

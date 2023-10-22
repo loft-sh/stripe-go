@@ -46,6 +46,16 @@ const (
 )
 
 // The status of the last refresh attempt.
+type FinancialConnectionsAccountInferredBalancesRefreshStatus string
+
+// List of values that FinancialConnectionsAccountInferredBalancesRefreshStatus can take
+const (
+	FinancialConnectionsAccountInferredBalancesRefreshStatusFailed    FinancialConnectionsAccountInferredBalancesRefreshStatus = "failed"
+	FinancialConnectionsAccountInferredBalancesRefreshStatusPending   FinancialConnectionsAccountInferredBalancesRefreshStatus = "pending"
+	FinancialConnectionsAccountInferredBalancesRefreshStatusSucceeded FinancialConnectionsAccountInferredBalancesRefreshStatus = "succeeded"
+)
+
+// The status of the last refresh attempt.
 type FinancialConnectionsAccountOwnershipRefreshStatus string
 
 // List of values that FinancialConnectionsAccountOwnershipRefreshStatus can take
@@ -102,6 +112,15 @@ const (
 	FinancialConnectionsAccountSubcategorySavings      FinancialConnectionsAccountSubcategory = "savings"
 )
 
+// The list of data refresh subscriptions requested on this account.
+type FinancialConnectionsAccountSubscription string
+
+// List of values that FinancialConnectionsAccountSubscription can take
+const (
+	FinancialConnectionsAccountSubscriptionInferredBalances FinancialConnectionsAccountSubscription = "inferred_balances"
+	FinancialConnectionsAccountSubscriptionTransactions     FinancialConnectionsAccountSubscription = "transactions"
+)
+
 // The [PaymentMethod type](https://stripe.com/docs/api/payment_methods/object#payment_method_object-type)(s) that can be created from this account.
 type FinancialConnectionsAccountSupportedPaymentMethodType string
 
@@ -109,6 +128,16 @@ type FinancialConnectionsAccountSupportedPaymentMethodType string
 const (
 	FinancialConnectionsAccountSupportedPaymentMethodTypeLink          FinancialConnectionsAccountSupportedPaymentMethodType = "link"
 	FinancialConnectionsAccountSupportedPaymentMethodTypeUSBankAccount FinancialConnectionsAccountSupportedPaymentMethodType = "us_bank_account"
+)
+
+// The status of the last refresh attempt.
+type FinancialConnectionsAccountTransactionRefreshStatus string
+
+// List of values that FinancialConnectionsAccountTransactionRefreshStatus can take
+const (
+	FinancialConnectionsAccountTransactionRefreshStatusFailed    FinancialConnectionsAccountTransactionRefreshStatus = "failed"
+	FinancialConnectionsAccountTransactionRefreshStatusPending   FinancialConnectionsAccountTransactionRefreshStatus = "pending"
+	FinancialConnectionsAccountTransactionRefreshStatusSucceeded FinancialConnectionsAccountTransactionRefreshStatus = "succeeded"
 )
 
 // If present, only return accounts that belong to the specified account holder. `account_holder[customer]` and `account_holder[account]` are mutually exclusive.
@@ -124,33 +153,96 @@ type FinancialConnectionsAccountListParams struct {
 	ListParams `form:"*"`
 	// If present, only return accounts that belong to the specified account holder. `account_holder[customer]` and `account_holder[account]` are mutually exclusive.
 	AccountHolder *FinancialConnectionsAccountListAccountHolderParams `form:"account_holder"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// If present, only return accounts that were collected as part of the given session.
 	Session *string `form:"session"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *FinancialConnectionsAccountListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Retrieves the details of an Financial Connections Account.
 type FinancialConnectionsAccountParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *FinancialConnectionsAccountParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Lists all owners for a given Account
 type FinancialConnectionsAccountListOwnersParams struct {
 	ListParams `form:"*"`
 	Account    *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The ID of the ownership object to fetch owners from.
 	Ownership *string `form:"ownership"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *FinancialConnectionsAccountListOwnersParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Refreshes the data associated with a Financial Connections Account.
 type FinancialConnectionsAccountRefreshParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The list of account features that you would like to refresh.
 	Features []*string `form:"features"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *FinancialConnectionsAccountRefreshParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Disables your access to a Financial Connections Account. You will no longer be able to access data associated with the account (e.g. balances, transactions).
 type FinancialConnectionsAccountDisconnectParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *FinancialConnectionsAccountDisconnectParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Subscribes to periodic refreshes of data associated with a Financial Connections Account.
+type FinancialConnectionsAccountSubscribeParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The list of account features to which you would like to subscribe.`.
+	Features []*string `form:"features"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *FinancialConnectionsAccountSubscribeParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Unsubscribes from periodic refreshes of data associated with a Financial Connections Account.
+type FinancialConnectionsAccountUnsubscribeParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The list of account features from which you would like to unsubscribe.
+	Features []*string `form:"features"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *FinancialConnectionsAccountUnsubscribeParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // The account holder that this account belongs to.
@@ -199,16 +291,42 @@ type FinancialConnectionsAccountBalance struct {
 type FinancialConnectionsAccountBalanceRefresh struct {
 	// The time at which the last refresh attempt was initiated. Measured in seconds since the Unix epoch.
 	LastAttemptedAt int64 `json:"last_attempted_at"`
+	// Time at which the next balance refresh can be initiated. This value will be `null` when `status` is `pending`. Measured in seconds since the Unix epoch.
+	NextRefreshAvailableAt int64 `json:"next_refresh_available_at"`
 	// The status of the last refresh attempt.
 	Status FinancialConnectionsAccountBalanceRefreshStatus `json:"status"`
+}
+
+// The state of the most recent attempt to refresh the account's inferred balance history.
+type FinancialConnectionsAccountInferredBalancesRefresh struct {
+	// The time at which the last refresh attempt was initiated. Measured in seconds since the Unix epoch.
+	LastAttemptedAt int64 `json:"last_attempted_at"`
+	// Time at which the next inferred balance refresh can be initiated. This value will be `null` when `status` is `pending`. Measured in seconds since the Unix epoch.
+	NextRefreshAvailableAt int64 `json:"next_refresh_available_at"`
+	// The status of the last refresh attempt.
+	Status FinancialConnectionsAccountInferredBalancesRefreshStatus `json:"status"`
 }
 
 // The state of the most recent attempt to refresh the account owners.
 type FinancialConnectionsAccountOwnershipRefresh struct {
 	// The time at which the last refresh attempt was initiated. Measured in seconds since the Unix epoch.
 	LastAttemptedAt int64 `json:"last_attempted_at"`
+	// Time at which the next ownership refresh can be initiated. This value will be `null` when `status` is `pending`. Measured in seconds since the Unix epoch.
+	NextRefreshAvailableAt int64 `json:"next_refresh_available_at"`
 	// The status of the last refresh attempt.
 	Status FinancialConnectionsAccountOwnershipRefreshStatus `json:"status"`
+}
+
+// The state of the most recent attempt to refresh the account transactions.
+type FinancialConnectionsAccountTransactionRefresh struct {
+	// Unique identifier for the object.
+	ID string `json:"id"`
+	// The time at which the last refresh attempt was initiated. Measured in seconds since the Unix epoch.
+	LastAttemptedAt int64 `json:"last_attempted_at"`
+	// Time at which the next transaction refresh can be initiated. This value will be `null` when `status` is `pending`. Measured in seconds since the Unix epoch.
+	NextRefreshAvailableAt int64 `json:"next_refresh_available_at"`
+	// The status of the last refresh attempt.
+	Status FinancialConnectionsAccountTransactionRefreshStatus `json:"status"`
 }
 
 // A Financial Connections Account represents an account that exists outside of Stripe, to which you have been granted some degree of access.
@@ -228,6 +346,8 @@ type FinancialConnectionsAccount struct {
 	DisplayName string `json:"display_name"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
+	// The state of the most recent attempt to refresh the account's inferred balance history.
+	InferredBalancesRefresh *FinancialConnectionsAccountInferredBalancesRefresh `json:"inferred_balances_refresh"`
 	// The name of the institution that holds this account.
 	InstitutionName string `json:"institution_name"`
 	// The last 4 digits of the account number. If present, this will be 4 numeric characters.
@@ -259,8 +379,12 @@ type FinancialConnectionsAccount struct {
 	//
 	// If `category` is `investment` or `other`, this will be `other`.
 	Subcategory FinancialConnectionsAccountSubcategory `json:"subcategory"`
+	// The list of data refresh subscriptions requested on this account.
+	Subscriptions []FinancialConnectionsAccountSubscription `json:"subscriptions"`
 	// The [PaymentMethod type](https://stripe.com/docs/api/payment_methods/object#payment_method_object-type)(s) that can be created from this account.
 	SupportedPaymentMethodTypes []FinancialConnectionsAccountSupportedPaymentMethodType `json:"supported_payment_method_types"`
+	// The state of the most recent attempt to refresh the account transactions.
+	TransactionRefresh *FinancialConnectionsAccountTransactionRefresh `json:"transaction_refresh"`
 }
 
 // FinancialConnectionsAccountList is a list of Accounts as retrieved from a list endpoint.

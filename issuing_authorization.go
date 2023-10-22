@@ -61,6 +61,17 @@ const (
 	IssuingAuthorizationVerificationDataCheckNotProvided IssuingAuthorizationVerificationDataCheck = "not_provided"
 )
 
+// The outcome of the 3D Secure authentication request.
+type IssuingAuthorizationVerificationDataThreeDSecureResult string
+
+// List of values that IssuingAuthorizationVerificationDataThreeDSecureResult can take
+const (
+	IssuingAuthorizationVerificationDataThreeDSecureResultAttemptAcknowledged IssuingAuthorizationVerificationDataThreeDSecureResult = "attempt_acknowledged"
+	IssuingAuthorizationVerificationDataThreeDSecureResultAuthenticated       IssuingAuthorizationVerificationDataThreeDSecureResult = "authenticated"
+	IssuingAuthorizationVerificationDataThreeDSecureResultFailed              IssuingAuthorizationVerificationDataThreeDSecureResult = "failed"
+	IssuingAuthorizationVerificationDataThreeDSecureResultRequired            IssuingAuthorizationVerificationDataThreeDSecureResult = "required"
+)
+
 // The digital wallet used for this transaction. One of `apple_pay`, `google_pay`, or `samsung_pay`. Will populate as `null` when no digital wallet was utilized.
 type IssuingAuthorizationWallet string
 
@@ -82,33 +93,96 @@ type IssuingAuthorizationListParams struct {
 	Created *int64 `form:"created"`
 	// Only return authorizations that were created during the given date interval.
 	CreatedRange *RangeQueryParams `form:"created"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Only return authorizations with the given status. One of `pending`, `closed`, or `reversed`.
 	Status *string `form:"status"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *IssuingAuthorizationListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Retrieves an Issuing Authorization object.
 type IssuingAuthorizationParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 }
 
-// Approves a pending Issuing Authorization object. This request should be made within the timeout window of the [real-time authorization](https://stripe.com/docs/issuing/controls/real-time-authorizations) flow.
-// You can also respond directly to the webhook request to approve an authorization (preferred). More details can be found [here](https://stripe.com/docs/issuing/controls/real-time-authorizations#authorization-handling).
+// AddExpand appends a new field to expand.
+func (p *IssuingAuthorizationParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *IssuingAuthorizationParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// [Deprecated] Approves a pending Issuing Authorization object. This request should be made within the timeout window of the [real-time authorization](https://stripe.com/docs/issuing/controls/real-time-authorizations) flow.
+// This method is deprecated. Instead, [respond directly to the webhook request to approve an authorization](https://stripe.com/docs/issuing/controls/real-time-authorizations#authorization-handling).
 type IssuingAuthorizationApproveParams struct {
 	Params `form:"*"`
 	// If the authorization's `pending_request.is_amount_controllable` property is `true`, you may provide this value to control how much to hold for the authorization. Must be positive (use [`decline`](https://stripe.com/docs/api/issuing/authorizations/decline) to decline an authorization request).
 	Amount *int64 `form:"amount"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 }
 
-// Declines a pending Issuing Authorization object. This request should be made within the timeout window of the [real time authorization](https://stripe.com/docs/issuing/controls/real-time-authorizations) flow.
-// You can also respond directly to the webhook request to decline an authorization (preferred). More details can be found [here](https://stripe.com/docs/issuing/controls/real-time-authorizations#authorization-handling).
+// AddExpand appends a new field to expand.
+func (p *IssuingAuthorizationApproveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *IssuingAuthorizationApproveParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// [Deprecated] Declines a pending Issuing Authorization object. This request should be made within the timeout window of the [real time authorization](https://stripe.com/docs/issuing/controls/real-time-authorizations) flow.
+// This method is deprecated. Instead, [respond directly to the webhook request to decline an authorization](https://stripe.com/docs/issuing/controls/real-time-authorizations#authorization-handling).
 type IssuingAuthorizationDeclineParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *IssuingAuthorizationDeclineParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *IssuingAuthorizationDeclineParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Detailed breakdown of amount components. These amounts are denominated in `currency` and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
 type IssuingAuthorizationAmountDetails struct {
 	// The fee charged by the ATM for the cash withdrawal.
 	ATMFee int64 `json:"atm_fee"`
+	// The amount of cash requested by the cardholder.
+	CashbackAmount int64 `json:"cashback_amount"`
 }
 type IssuingAuthorizationMerchantData struct {
 	// A categorization of the seller's type of business. See our [merchant categories guide](https://stripe.com/docs/issuing/merchant-categories) for a list of possible values.
@@ -129,6 +203,8 @@ type IssuingAuthorizationMerchantData struct {
 	State string `json:"state"`
 	// An ID assigned by the seller to the location of the sale.
 	TerminalID string `json:"terminal_id"`
+	// URL provided by the merchant on a 3DS request
+	URL string `json:"url"`
 }
 
 // Details about the authorization, such as identifiers, set by the card network.
@@ -161,6 +237,8 @@ type IssuingAuthorizationRequestHistory struct {
 	AmountDetails *IssuingAuthorizationAmountDetails `json:"amount_details"`
 	// Whether this request was approved.
 	Approved bool `json:"approved"`
+	// A code created by Stripe which is shared with the merchant to validate the authorization. This field will be populated if the authorization message was approved. The code typically starts with the letter "S", followed by a six-digit number. For example, "S498162". Please note that the code is not guaranteed to be unique across authorizations.
+	AuthorizationCode string `json:"authorization_code"`
 	// Time at which the object was created. Measured in seconds since the Unix epoch.
 	Created int64 `json:"created"`
 	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -184,6 +262,12 @@ type IssuingAuthorizationTreasury struct {
 	// The Treasury [Transaction](https://stripe.com/docs/api/treasury/transactions) associated with this authorization
 	Transaction string `json:"transaction"`
 }
+
+// 3D Secure details.
+type IssuingAuthorizationVerificationDataThreeDSecure struct {
+	// The outcome of the 3D Secure authentication request.
+	Result IssuingAuthorizationVerificationDataThreeDSecureResult `json:"result"`
+}
 type IssuingAuthorizationVerificationData struct {
 	// Whether the cardholder provided an address first line and if it matched the cardholder's `billing.address.line1`.
 	AddressLine1Check IssuingAuthorizationVerificationDataCheck `json:"address_line1_check"`
@@ -193,6 +277,10 @@ type IssuingAuthorizationVerificationData struct {
 	CVCCheck IssuingAuthorizationVerificationDataCheck `json:"cvc_check"`
 	// Whether the cardholder provided an expiry date and if it matched Stripe's record.
 	ExpiryCheck IssuingAuthorizationVerificationDataCheck `json:"expiry_check"`
+	// The postal code submitted as part of the authorization used for postal code verification.
+	PostalCode string `json:"postal_code"`
+	// 3D Secure details.
+	ThreeDSecure *IssuingAuthorizationVerificationDataThreeDSecure `json:"three_d_secure"`
 }
 
 // When an [issued card](https://stripe.com/docs/issuing) is used to make a purchase, an Issuing `Authorization`
@@ -241,6 +329,8 @@ type IssuingAuthorization struct {
 	RequestHistory []*IssuingAuthorizationRequestHistory `json:"request_history"`
 	// The current status of the authorization in its lifecycle.
 	Status IssuingAuthorizationStatus `json:"status"`
+	// [Token](https://stripe.com/docs/api/issuing/tokens/object) object used for this authorization. If a network token was not used for this authorization, this field will be null.
+	Token *IssuingToken `json:"token"`
 	// List of [transactions](https://stripe.com/docs/api/issuing/transactions) associated with this authorization.
 	Transactions []*IssuingTransaction `json:"transactions"`
 	// [Treasury](https://stripe.com/docs/api/treasury) details related to this authorization if it was created on a [FinancialAccount](https://stripe.com/docs/api/treasury/financial_accounts).

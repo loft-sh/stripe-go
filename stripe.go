@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stripe/stripe-go/v74/form"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
 //
@@ -30,9 +30,6 @@ import (
 //
 
 const (
-	// APIVersion is the currently supported API version
-	APIVersion string = apiVersion
-
 	// APIBackend is a constant representing the API service backend.
 	APIBackend SupportedBackend = "api"
 
@@ -79,6 +76,9 @@ var EnableTelemetry = true
 
 // Key is the Stripe API key used globally in the binding.
 var Key string
+
+// APIVersion is the currently supported API version
+var APIVersion string = apiVersion
 
 //
 // Public types
@@ -201,6 +201,10 @@ type Backend interface {
 	SetMaxNetworkRetries(maxNetworkRetries int64)
 }
 
+type RawRequestBackend interface {
+	RawRequest(method, path, key, content string, params *RawParams) (*APIResponse, error)
+}
+
 // BackendConfig is used to configure a new Stripe backend.
 type BackendConfig struct {
 	// EnableTelemetry allows request metrics (request id and duration) to be sent
@@ -275,7 +279,7 @@ type BackendImplementation struct {
 	requestMetricsBuffer chan requestMetrics
 }
 
-func extractParams(params ParamsContainer) (*form.Values, *Params) {
+func extractParams(params ParamsContainer) (*form.Values, *Params, error) {
 	var formValues *form.Values
 	var commonParams *Params
 
@@ -292,23 +296,42 @@ func extractParams(params ParamsContainer) (*form.Values, *Params) {
 
 		if reflectValue.Kind() == reflect.Ptr && !reflectValue.IsNil() {
 			commonParams = params.GetParams()
+
+			if !reflectValue.Elem().FieldByName("Metadata").IsZero() {
+				if commonParams.Metadata != nil {
+					return nil, nil, fmt.Errorf("You cannot specify both the (deprecated) .Params.Metadata and .Metadata in %s", reflectValue.Elem().Type().Name())
+				}
+			}
+
+			if !reflectValue.Elem().FieldByName("Expand").IsZero() {
+				if commonParams.Expand != nil {
+					return nil, nil, fmt.Errorf("You cannot specify both the (deprecated) .Params.Expand and .Expand in %s", reflectValue.Elem().Type().Name())
+				}
+			}
+
 			formValues = &form.Values{}
 			form.AppendTo(formValues, params)
 		}
 	}
-	return formValues, commonParams
+	return formValues, commonParams, nil
 }
 
 // Call is the Backend.Call implementation for invoking Stripe APIs.
 func (s *BackendImplementation) Call(method, path, key string, params ParamsContainer, v LastResponseSetter) error {
-	body, commonParams := extractParams(params)
+	body, commonParams, err := extractParams(params)
+	if err != nil {
+		return err
+	}
 	return s.CallRaw(method, path, key, body, commonParams, v)
 }
 
 // CallStreaming is the Backend.Call implementation for invoking Stripe APIs
 // without buffering the response into memory.
 func (s *BackendImplementation) CallStreaming(method, path, key string, params ParamsContainer, v StreamingLastResponseSetter) error {
-	formValues, commonParams := extractParams(params)
+	formValues, commonParams, err := extractParams(params)
+	if err != nil {
+		return err
+	}
 
 	var body string
 	if formValues != nil && !formValues.Empty() {
@@ -350,6 +373,74 @@ func (s *BackendImplementation) CallMultipart(method, path, key, boundary string
 	return nil
 }
 
+// RawRequest is the Backend.RawRequest implementation for invoking Stripe APIs.
+func (s *BackendImplementation) RawRequest(method, path, key, content string, params *RawParams) (*APIResponse, error) {
+	var bodyBuffer = bytes.NewBuffer(nil)
+	var commonParams *Params
+	var err error
+	var contentType string
+	if method != http.MethodPost && method != http.MethodGet && method != http.MethodDelete {
+		return nil, fmt.Errorf("method must be POST, GET, or DELETE. Received %s", method)
+	}
+
+	paramsIsNil := params == nil || reflect.ValueOf(params).IsNil()
+
+	if paramsIsNil {
+		_, commonParams, err = extractParams(params)
+		if err != nil {
+			return nil, err
+		}
+		contentType = "application/x-www-form-urlencoded"
+	} else {
+		if params.APIMode == StandardAPIMode {
+			_, commonParams, err = extractParams(params)
+			if err != nil {
+				return nil, err
+			}
+			contentType = "application/x-www-form-urlencoded"
+		} else if params.APIMode == PreviewAPIMode {
+			_, commonParams, err = extractParams(params)
+			if err != nil {
+				return nil, err
+			}
+			contentType = "application/json"
+		} else {
+			return nil, fmt.Errorf("Unknown API mode %s", params.APIMode)
+		}
+	}
+
+	bodyBuffer.WriteString(content)
+
+	req, err := s.NewRequest(method, path, key, contentType, commonParams)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !paramsIsNil {
+		if params.StripeContext != "" {
+			req.Header.Set("Stripe-Context", params.StripeContext)
+		}
+		if params.APIMode == PreviewAPIMode {
+			req.Header.Set("Stripe-Version", previewVersion)
+		}
+	}
+
+	handleResponse := func(res *http.Response, err error) (interface{}, error) {
+		return s.handleResponseBufferingErrors(res, err)
+	}
+
+	resp, result, err := s.requestWithRetriesAndTelemetry(req, bodyBuffer, handleResponse)
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(result.(io.ReadCloser))
+	if err != nil {
+		return nil, err
+	}
+	return newAPIResponse(resp, body), nil
+}
+
 // CallRaw is the implementation for invoking Stripe APIs internally without a backend.
 func (s *BackendImplementation) CallRaw(method, path, key string, form *form.Values, params *Params, v LastResponseSetter) error {
 	var body string
@@ -357,7 +448,7 @@ func (s *BackendImplementation) CallRaw(method, path, key string, form *form.Val
 		body = form.Encode()
 
 		// On `GET`, move the payload into the URL
-		if method == http.MethodGet {
+		if method != http.MethodPost {
 			path += "?" + body
 			body = ""
 		}
@@ -398,7 +489,7 @@ func (s *BackendImplementation) NewRequest(method, path, key, contentType string
 	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("Stripe-Version", APIVersion)
 	req.Header.Add("User-Agent", encodedUserAgent)
-	req.Header.Add("X-Stripe-Client-User-Agent", encodedStripeUserAgent)
+	req.Header.Add("X-Stripe-Client-User-Agent", getEncodedStripeUserAgent())
 
 	if params != nil {
 		if params.Context != nil {
@@ -594,38 +685,40 @@ func (s *BackendImplementation) logError(statusCode int, err error) {
 	}
 }
 
+func (s *BackendImplementation) handleResponseBufferingErrors(res *http.Response, err error) (io.ReadCloser, error) {
+	// Some sort of connection error
+	if err != nil {
+		s.LeveledLogger.Errorf("Request failed with error: %v", err)
+		return res.Body, err
+	}
+
+	// Successful response, return the body ReadCloser
+	if res.StatusCode < 400 {
+		return res.Body, err
+	}
+
+	// Failure: try and parse the json of the response
+	// when logging the error
+	var resBody []byte
+	resBody, err = ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err == nil {
+		err = s.ResponseToError(res, resBody)
+	} else {
+		s.logError(res.StatusCode, err)
+	}
+
+	return res.Body, err
+}
+
 // DoStreaming is used by CallStreaming to execute an API request. It uses the
 // backend's HTTP client to execure the request.  In successful cases, it sets
 // a StreamingLastResponse onto v, but in unsuccessful cases handles unmarshaling
 // errors returned by the API.
 func (s *BackendImplementation) DoStreaming(req *http.Request, body *bytes.Buffer, v StreamingLastResponseSetter) error {
 	handleResponse := func(res *http.Response, err error) (interface{}, error) {
-
-		// Some sort of connection error
-		if err != nil {
-			s.LeveledLogger.Errorf("Request failed with error: %v", err)
-			return res.Body, err
-		}
-
-		// Successful response, return the body ReadCloser
-		if res.StatusCode < 400 {
-			return res.Body, err
-		}
-
-		// Failure: try and parse the json of the response
-		// when logging the error
-		var resBody []byte
-		resBody, err = ioutil.ReadAll(res.Body)
-		res.Body.Close()
-		if err == nil {
-			err = s.ResponseToError(res, resBody)
-		} else {
-			s.logError(res.StatusCode, err)
-		}
-
-		return res.Body, err
+		return s.handleResponseBufferingErrors(res, err)
 	}
-
 	resp, result, err := s.requestWithRetriesAndTelemetry(req, body, handleResponse)
 	if err != nil {
 		return err
@@ -1097,8 +1190,7 @@ func Int64Slice(v []int64) []*int64 {
 	return out
 }
 
-// NewBackends creates a new set of backends with the given HTTP client. You
-// should only need to use this for testing purposes or on App Engine.
+// NewBackends creates a new set of backends with the given HTTP client.
 func NewBackends(httpClient *http.Client) *Backends {
 	apiConfig := &BackendConfig{HTTPClient: httpClient}
 	connectConfig := &BackendConfig{HTTPClient: httpClient}
@@ -1107,6 +1199,16 @@ func NewBackends(httpClient *http.Client) *Backends {
 		API:     GetBackendWithConfig(APIBackend, apiConfig),
 		Connect: GetBackendWithConfig(ConnectBackend, connectConfig),
 		Uploads: GetBackendWithConfig(UploadsBackend, uploadConfig),
+	}
+}
+
+// NewBackendsWithConfig creates a new set of backends with the given config for all backends.
+// Useful for setting up client with a custom logger and http client.
+func NewBackendsWithConfig(config *BackendConfig) *Backends {
+	return &Backends{
+		API:     GetBackendWithConfig(APIBackend, config),
+		Connect: GetBackendWithConfig(ConnectBackend, config),
+		Uploads: GetBackendWithConfig(UploadsBackend, config),
 	}
 }
 
@@ -1198,7 +1300,7 @@ func StringSlice(v []string) []*string {
 //
 
 // clientversion is the binding version
-const clientversion = "74.23.0"
+const clientversion = "76.2.0-beta.1"
 
 // defaultHTTPTimeout is the default timeout on the http.Client used by the library.
 // This is chosen to be consistent with the other Stripe language libraries and
@@ -1259,6 +1361,7 @@ type requestTelemetry struct {
 var appInfo *AppInfo
 var backends Backends
 var encodedStripeUserAgent string
+var encodedStripeUserAgentReady *sync.Once
 var encodedUserAgent string
 
 // The default HTTP client used for communication with any of Stripe's
@@ -1340,22 +1443,28 @@ func initUserAgent() {
 	if appInfo != nil {
 		encodedUserAgent += " " + appInfo.formatUserAgent()
 	}
+	encodedStripeUserAgentReady = &sync.Once{}
+}
 
-	stripeUserAgent := &stripeClientUserAgent{
-		Application:     appInfo,
-		BindingsVersion: clientversion,
-		Language:        "go",
-		LanguageVersion: runtime.Version(),
-		Publisher:       "stripe",
-		Uname:           getUname(),
-	}
-	marshaled, err := json.Marshal(stripeUserAgent)
-	// Encoding this struct should never be a problem, so we're okay to panic
-	// in case it is for some reason.
-	if err != nil {
-		panic(err)
-	}
-	encodedStripeUserAgent = string(marshaled)
+func getEncodedStripeUserAgent() string {
+	encodedStripeUserAgentReady.Do(func() {
+		stripeUserAgent := &stripeClientUserAgent{
+			Application:     appInfo,
+			BindingsVersion: clientversion,
+			Language:        "go",
+			LanguageVersion: runtime.Version(),
+			Publisher:       "stripe",
+			Uname:           getUname(),
+		}
+		marshaled, err := json.Marshal(stripeUserAgent)
+		// Encoding this struct should never be a problem, so we're okay to panic
+		// in case it is for some reason.
+		if err != nil {
+			panic(err)
+		}
+		encodedStripeUserAgent = string(marshaled)
+	})
+	return encodedStripeUserAgent
 }
 
 func isHTTPWriteMethod(method string) bool {
@@ -1404,4 +1513,11 @@ func normalizeURL(url string) string {
 	url = strings.TrimSuffix(url, "/v1")
 
 	return url
+}
+
+func RawRequest(method, path string, content string, params *RawParams) (*APIResponse, error) {
+	if bi, ok := GetBackend(APIBackend).(RawRequestBackend); ok {
+		return bi.RawRequest(method, path, Key, content, params)
+	}
+	return nil, fmt.Errorf("Error: cannot call RawRequest if backends.API is initialized with a backend that doesn't implement RawRequestBackend")
 }

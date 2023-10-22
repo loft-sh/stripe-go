@@ -29,6 +29,26 @@ const (
 	IssuingCardReplacementReasonStolen  IssuingCardReplacementReason = "stolen"
 )
 
+// The address validation capabilities to use.
+type IssuingCardShippingAddressValidationMode string
+
+// List of values that IssuingCardShippingAddressValidationMode can take
+const (
+	IssuingCardShippingAddressValidationModeDisabled                   IssuingCardShippingAddressValidationMode = "disabled"
+	IssuingCardShippingAddressValidationModeNormalizationOnly          IssuingCardShippingAddressValidationMode = "normalization_only"
+	IssuingCardShippingAddressValidationModeValidationAndNormalization IssuingCardShippingAddressValidationMode = "validation_and_normalization"
+)
+
+// The validation result for the shipping address.
+type IssuingCardShippingAddressValidationResult string
+
+// List of values that IssuingCardShippingAddressValidationResult can take
+const (
+	IssuingCardShippingAddressValidationResultIndeterminate       IssuingCardShippingAddressValidationResult = "indeterminate"
+	IssuingCardShippingAddressValidationResultLikelyDeliverable   IssuingCardShippingAddressValidationResult = "likely_deliverable"
+	IssuingCardShippingAddressValidationResultLikelyUndeliverable IssuingCardShippingAddressValidationResult = "likely_undeliverable"
+)
+
 // The delivery company that shipped a card.
 type IssuingCardShippingCarrier string
 
@@ -133,16 +153,30 @@ type IssuingCardListParams struct {
 	Created *int64 `form:"created"`
 	// Only return cards that were issued during the given date interval.
 	CreatedRange *RangeQueryParams `form:"created"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Only return cards that have the given expiration month.
 	ExpMonth *int64 `form:"exp_month"`
 	// Only return cards that have the given expiration year.
 	ExpYear *int64 `form:"exp_year"`
 	// Only return cards that have the given last four digits.
-	Last4 *string `form:"last4"`
+	Last4                 *string `form:"last4"`
+	PersonalizationDesign *string `form:"personalization_design"`
 	// Only return cards that have the given status. One of `active`, `inactive`, or `canceled`.
 	Status *string `form:"status"`
 	// Only return cards that have the given type. One of `virtual` or `physical`.
 	Type *string `form:"type"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *IssuingCardListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Address validation settings.
+type IssuingCardShippingAddressValidationParams struct {
+	// The address validation capabilities to use.
+	Mode *string `form:"mode"`
 }
 
 // Customs information for the shipment.
@@ -155,6 +189,8 @@ type IssuingCardShippingCustomsParams struct {
 type IssuingCardShippingParams struct {
 	// The address that the card is shipped to.
 	Address *AddressParams `form:"address"`
+	// Address validation settings.
+	AddressValidation *IssuingCardShippingAddressValidationParams `form:"address_validation"`
 	// Customs information for the shipment.
 	Customs *IssuingCardShippingCustomsParams `form:"customs"`
 	// The name printed on the shipping label when shipping the card.
@@ -195,8 +231,14 @@ type IssuingCardParams struct {
 	// The [Cardholder](https://stripe.com/docs/api#issuing_cardholder_object) object with which the card will be associated.
 	Cardholder *string `form:"cardholder"`
 	// The currency for the card.
-	Currency         *string `form:"currency"`
-	FinancialAccount *string `form:"financial_account"`
+	Currency *string `form:"currency"`
+	// Specifies which fields in the response should be expanded.
+	Expand           []*string `form:"expand"`
+	FinancialAccount *string   `form:"financial_account"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// The personalization design object belonging to this card.
+	PersonalizationDesign *string `form:"personalization_design"`
 	// The desired new PIN for this card.
 	PIN *IssuingCardPINParams `form:"pin"`
 	// The card this is meant to be a replacement for (if any).
@@ -216,10 +258,34 @@ type IssuingCardParams struct {
 	CancellationReason *string `form:"cancellation_reason"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *IssuingCardParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *IssuingCardParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // The desired new PIN for this card.
 type IssuingCardPINParams struct {
 	// The card's desired new PIN, encrypted under Stripe's public key.
 	EncryptedNumber *string `form:"encrypted_number"`
+}
+
+// Address validation details for the shipment.
+type IssuingCardShippingAddressValidation struct {
+	// The address validation capabilities to use.
+	Mode IssuingCardShippingAddressValidationMode `json:"mode"`
+	// The normalized shipping address.
+	NormalizedAddress *Address `json:"normalized_address"`
+	// The validation result for the shipping address.
+	Result IssuingCardShippingAddressValidationResult `json:"result"`
 }
 
 // Additional information that may be required for clearing customs.
@@ -231,6 +297,8 @@ type IssuingCardShippingCustoms struct {
 // Where and how the card will be shipped.
 type IssuingCardShipping struct {
 	Address *Address `json:"address"`
+	// Address validation details for the shipment.
+	AddressValidation *IssuingCardShippingAddressValidation `json:"address_validation"`
 	// The delivery company that shipped a card.
 	Carrier IssuingCardShippingCarrier `json:"carrier"`
 	// Additional information that may be required for clearing customs.
@@ -239,7 +307,7 @@ type IssuingCardShipping struct {
 	ETA int64 `json:"eta"`
 	// Recipient name.
 	Name string `json:"name"`
-	// The phone number of the receiver of the bulk shipment. This phone number will be provided to the shipping company, who might use it to contact the receiver in case of delivery issues.
+	// The phone number of the receiver of the shipment. Our courier partners will use this number to contact you in the event of card delivery issues. For individual shipments to the EU/UK, if this field is empty, we will provide them with the phone number provided when the cardholder was initially created.
 	PhoneNumber string `json:"phone_number"`
 	// Whether a signature is required for card delivery. This feature is only supported for US users. Standard shipping service does not support signature on delivery. The default value for standard shipping service is false and for express and priority services is true.
 	RequireSignature bool `json:"require_signature"`
@@ -330,6 +398,8 @@ type IssuingCard struct {
 	Number string `json:"number"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
+	// The personalization design object belonging to this card.
+	PersonalizationDesign *IssuingPersonalizationDesign `json:"personalization_design"`
 	// The latest card that replaces this card, if any.
 	ReplacedBy *IssuingCard `json:"replaced_by"`
 	// The card this card replaces, if any.

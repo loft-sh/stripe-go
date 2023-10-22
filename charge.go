@@ -58,6 +58,33 @@ const (
 	ChargePaymentMethodDetailsCardChecksCVCCheckUnchecked   ChargePaymentMethodDetailsCardChecksCVCCheck = "unchecked"
 )
 
+// Indicates whether or not the capture window is extended beyond the standard authorization.
+type ChargePaymentMethodDetailsCardExtendedAuthorizationStatus string
+
+// List of values that ChargePaymentMethodDetailsCardExtendedAuthorizationStatus can take
+const (
+	ChargePaymentMethodDetailsCardExtendedAuthorizationStatusDisabled ChargePaymentMethodDetailsCardExtendedAuthorizationStatus = "disabled"
+	ChargePaymentMethodDetailsCardExtendedAuthorizationStatusEnabled  ChargePaymentMethodDetailsCardExtendedAuthorizationStatus = "enabled"
+)
+
+// Indicates whether or not the incremental authorization feature is supported.
+type ChargePaymentMethodDetailsCardIncrementalAuthorizationStatus string
+
+// List of values that ChargePaymentMethodDetailsCardIncrementalAuthorizationStatus can take
+const (
+	ChargePaymentMethodDetailsCardIncrementalAuthorizationStatusAvailable   ChargePaymentMethodDetailsCardIncrementalAuthorizationStatus = "available"
+	ChargePaymentMethodDetailsCardIncrementalAuthorizationStatusUnavailable ChargePaymentMethodDetailsCardIncrementalAuthorizationStatus = "unavailable"
+)
+
+// Indicates whether or not multiple captures are supported.
+type ChargePaymentMethodDetailsCardMulticaptureStatus string
+
+// List of values that ChargePaymentMethodDetailsCardMulticaptureStatus can take
+const (
+	ChargePaymentMethodDetailsCardMulticaptureStatusAvailable   ChargePaymentMethodDetailsCardMulticaptureStatus = "available"
+	ChargePaymentMethodDetailsCardMulticaptureStatusUnavailable ChargePaymentMethodDetailsCardMulticaptureStatus = "unavailable"
+)
+
 // Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
 type ChargePaymentMethodDetailsCardNetwork string
 
@@ -73,6 +100,15 @@ const (
 	ChargePaymentMethodDetailsCardNetworkUnionpay        ChargePaymentMethodDetailsCardNetwork = "unionpay"
 	ChargePaymentMethodDetailsCardNetworkVisa            ChargePaymentMethodDetailsCardNetwork = "visa"
 	ChargePaymentMethodDetailsCardNetworkUnknown         ChargePaymentMethodDetailsCardNetwork = "unknown"
+)
+
+// Indicates whether or not the authorized amount can be over-captured.
+type ChargePaymentMethodDetailsCardOvercaptureStatus string
+
+// List of values that ChargePaymentMethodDetailsCardOvercaptureStatus can take
+const (
+	ChargePaymentMethodDetailsCardOvercaptureStatusAvailable   ChargePaymentMethodDetailsCardOvercaptureStatus = "available"
+	ChargePaymentMethodDetailsCardOvercaptureStatusUnavailable ChargePaymentMethodDetailsCardOvercaptureStatus = "unavailable"
 )
 
 // For authenticated transactions: how the customer was authenticated by
@@ -248,8 +284,15 @@ const (
 // to an hour behind during outages. Search functionality is not available to merchants in India.
 type ChargeSearchParams struct {
 	SearchParams `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
 	Page *string `form:"page"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *ChargeSearchParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Returns a list of charges you've previously created. The charges are returned in sorted order, with the most recent charges appearing first.
@@ -259,11 +302,19 @@ type ChargeListParams struct {
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Only return charges for the customer specified by this customer ID.
 	Customer *string `form:"customer"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Only return charges that were created by the PaymentIntent specified by this PaymentIntent ID.
 	PaymentIntent *string `form:"payment_intent"`
 	// Only return charges for this transfer group.
 	TransferGroup *string `form:"transfer_group"`
 }
+
+// AddExpand appends a new field to expand.
+func (p *ChargeListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 type ChargeDestinationParams struct {
 	// ID of an existing, connected Stripe account.
 	Account *string `form:"account"`
@@ -318,18 +369,24 @@ type ChargeParams struct {
 	Currency *string `form:"currency"`
 	// The ID of an existing customer that will be associated with this request. This field may only be updated if there is no existing associated customer with this charge.
 	Customer *string `form:"customer"`
-	// An arbitrary string which you can attach to a charge object. It is displayed when in the web interface alongside the charge. Note that if you use Stripe to send automatic email receipts to your customers, your receipt emails will include the `description` of the charge(s) that they are describing.
+	// An arbitrary string which you can attach to a `Charge` object. It is displayed when in the web interface alongside the charge. Note that if you use Stripe to send automatic email receipts to your customers, your receipt emails will include the `description` of the charge(s) that they are describing.
 	Description  *string                  `form:"description"`
 	Destination  *ChargeDestinationParams `form:"destination"`
 	ExchangeRate *float64                 `form:"exchange_rate"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// A set of key-value pairs you can attach to a charge giving information about its riskiness. If you believe a charge is fraudulent, include a `user_report` key with a value of `fraudulent`. If you believe a charge is safe, include a `user_report` key with a value of `safe`. Stripe will use the information you send to improve our fraud detection algorithms.
 	FraudDetails *ChargeFraudDetailsParams `form:"fraud_details"`
 	Level3       *ChargeLevel3Params       `form:"level3"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// The Stripe account ID for which these funds are intended. Automatically set if you use the `destination` parameter. For details, see [Creating Separate Charges and Transfers](https://stripe.com/docs/connect/separate-charges-and-transfers#on-behalf-of).
 	OnBehalfOf *string `form:"on_behalf_of"`
+	// Provides industry-specific information about the charge.
+	PaymentDetails *ChargePaymentDetailsParams `form:"payment_details"`
 	// Options to configure Radar. See [Radar Session](https://stripe.com/docs/radar/radar-session) for more information.
 	RadarOptions *ChargeRadarOptionsParams `form:"radar_options"`
-	// This is the email address that the receipt for this charge will be sent to. If this field is updated, then a new email receipt will be sent to the updated address.
+	// The email address to which this charge's [receipt](https://stripe.com/docs/dashboard/receipts) will be sent. The receipt will not be sent until the charge is paid, and no receipts will be sent for test mode charges. If this charge is for a [Customer](https://stripe.com/docs/api/customers/object), the email address specified here will override the customer's email address. If `receipt_email` is specified for a charge in live mode, a receipt will be sent regardless of your [email settings](https://dashboard.stripe.com/account/emails).
 	ReceiptEmail *string `form:"receipt_email"`
 	// Shipping information for the charge. Helps prevent fraud on charges for physical goods.
 	Shipping *ShippingDetailsParams     `form:"shipping"`
@@ -352,10 +409,256 @@ func (p *ChargeParams) SetSource(sp interface{}) error {
 	return err
 }
 
+// AddExpand appends a new field to expand.
+func (p *ChargeParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *ChargeParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // A set of key-value pairs you can attach to a charge giving information about its riskiness. If you believe a charge is fraudulent, include a `user_report` key with a value of `fraudulent`. If you believe a charge is safe, include a `user_report` key with a value of `safe`. Stripe will use the information you send to improve our fraud detection algorithms.
 type ChargeFraudDetailsParams struct {
 	// Either `safe` or `fraudulent`.
 	UserReport *string `form:"user_report"`
+}
+
+// Car rental details for this PaymentIntent.
+type ChargePaymentDetailsCarRentalParams struct {
+	// The booking number associated with the car rental.
+	BookingNumber *string `form:"booking_number"`
+	// Class code of the car.
+	CarClassCode *string `form:"car_class_code"`
+	// Make of the car.
+	CarMake *string `form:"car_make"`
+	// Model of the car.
+	CarModel *string `form:"car_model"`
+	// The name of the rental car company.
+	Company *string `form:"company"`
+	// The customer service phone number of the car rental company.
+	CustomerServicePhoneNumber *string `form:"customer_service_phone_number"`
+	// Number of days the car is being rented.
+	DaysRented *int64 `form:"days_rented"`
+	// List of additional charges being billed.
+	ExtraCharges []*string `form:"extra_charges"`
+	// Indicates if the customer did not keep nor cancel their booking.
+	NoShow *bool `form:"no_show"`
+	// Car pick-up address.
+	PickupAddress *AddressParams `form:"pickup_address"`
+	// Car pick-up time. Measured in seconds since the Unix epoch.
+	PickupAt *int64 `form:"pickup_at"`
+	// Rental rate.
+	RateAmount *int64 `form:"rate_amount"`
+	// The frequency at which the rate amount is applied. One of `day`, `week` or `month`
+	RateInterval *string `form:"rate_interval"`
+	// The name of the person or entity renting the car.
+	RenterName *string `form:"renter_name"`
+	// Car return address.
+	ReturnAddress *AddressParams `form:"return_address"`
+	// Car return time. Measured in seconds since the Unix epoch.
+	ReturnAt *int64 `form:"return_at"`
+	// Indicates whether the goods or services are tax-exempt or tax is not collected.
+	TaxExempt *bool `form:"tax_exempt"`
+}
+
+// The individual flight segments associated with the trip.
+type ChargePaymentDetailsFlightSegmentParams struct {
+	// The International Air Transport Association (IATA) airport code for the arrival airport.
+	ArrivalAirport *string `form:"arrival_airport"`
+	// The arrival time for the flight segment. Measured in seconds since the Unix epoch.
+	ArrivesAt *int64 `form:"arrives_at"`
+	// The International Air Transport Association (IATA) carrier code of the carrier operating the flight segment.
+	Carrier *string `form:"carrier"`
+	// The departure time for the flight segment. Measured in seconds since the Unix epoch.
+	DepartsAt *int64 `form:"departs_at"`
+	// The International Air Transport Association (IATA) airport code for the departure airport.
+	DepartureAirport *string `form:"departure_airport"`
+	// The flight number associated with the segment
+	FlightNumber *string `form:"flight_number"`
+	// The fare class for the segment.
+	ServiceClass *string `form:"service_class"`
+}
+
+// Flight reservation details for this PaymentIntent
+type ChargePaymentDetailsFlightParams struct {
+	// The agency number (i.e. International Air Transport Association (IATA) agency number) of the travel agency that made the booking.
+	AgencyNumber *string `form:"agency_number"`
+	// The International Air Transport Association (IATA) carrier code of the carrier that issued the ticket.
+	Carrier *string `form:"carrier"`
+	// The name of the person or entity on the reservation.
+	PassengerName *string `form:"passenger_name"`
+	// The individual flight segments associated with the trip.
+	Segments []*ChargePaymentDetailsFlightSegmentParams `form:"segments"`
+	// The ticket number associated with the travel reservation.
+	TicketNumber *string `form:"ticket_number"`
+}
+
+// Lodging reservation details for this PaymentIntent
+type ChargePaymentDetailsLodgingParams struct {
+	// The lodging location's address.
+	Address *AddressParams `form:"address"`
+	// The number of adults on the booking
+	Adults *int64 `form:"adults"`
+	// The booking number associated with the lodging reservation.
+	BookingNumber *string `form:"booking_number"`
+	// The lodging category
+	Category *string `form:"category"`
+	// Loding check-in time. Measured in seconds since the Unix epoch.
+	CheckinAt *int64 `form:"checkin_at"`
+	// Lodging check-out time. Measured in seconds since the Unix epoch.
+	CheckoutAt *int64 `form:"checkout_at"`
+	// The customer service phone number of the lodging company.
+	CustomerServicePhoneNumber *string `form:"customer_service_phone_number"`
+	// The daily lodging room rate.
+	DailyRoomRateAmount *int64 `form:"daily_room_rate_amount"`
+	// List of additional charges being billed.
+	ExtraCharges []*string `form:"extra_charges"`
+	// Indicates whether the lodging location is compliant with the Fire Safety Act.
+	FireSafetyActCompliance *bool `form:"fire_safety_act_compliance"`
+	// The name of the lodging location.
+	Name *string `form:"name"`
+	// Indicates if the customer did not keep their booking while failing to cancel the reservation.
+	NoShow *bool `form:"no_show"`
+	// The phone number of the lodging location.
+	PropertyPhoneNumber *string `form:"property_phone_number"`
+	// The number of room nights
+	RoomNights *int64 `form:"room_nights"`
+	// The total tax amount associating with the room reservation.
+	TotalRoomTaxAmount *int64 `form:"total_room_tax_amount"`
+	// The total tax amount
+	TotalTaxAmount *int64 `form:"total_tax_amount"`
+}
+
+// Provides industry-specific information about the charge.
+type ChargePaymentDetailsParams struct {
+	// Car rental details for this PaymentIntent.
+	CarRental *ChargePaymentDetailsCarRentalParams `form:"car_rental"`
+	// Flight reservation details for this PaymentIntent
+	Flight *ChargePaymentDetailsFlightParams `form:"flight"`
+	// Lodging reservation details for this PaymentIntent
+	Lodging *ChargePaymentDetailsLodgingParams `form:"lodging"`
+}
+
+// Car rental details for this PaymentIntent.
+type ChargeCapturePaymentDetailsCarRentalParams struct {
+	// The booking number associated with the car rental.
+	BookingNumber *string `form:"booking_number"`
+	// Class code of the car.
+	CarClassCode *string `form:"car_class_code"`
+	// Make of the car.
+	CarMake *string `form:"car_make"`
+	// Model of the car.
+	CarModel *string `form:"car_model"`
+	// The name of the rental car company.
+	Company *string `form:"company"`
+	// The customer service phone number of the car rental company.
+	CustomerServicePhoneNumber *string `form:"customer_service_phone_number"`
+	// Number of days the car is being rented.
+	DaysRented *int64 `form:"days_rented"`
+	// List of additional charges being billed.
+	ExtraCharges []*string `form:"extra_charges"`
+	// Indicates if the customer did not keep nor cancel their booking.
+	NoShow *bool `form:"no_show"`
+	// Car pick-up address.
+	PickupAddress *AddressParams `form:"pickup_address"`
+	// Car pick-up time. Measured in seconds since the Unix epoch.
+	PickupAt *int64 `form:"pickup_at"`
+	// Rental rate.
+	RateAmount *int64 `form:"rate_amount"`
+	// The frequency at which the rate amount is applied. One of `day`, `week` or `month`
+	RateInterval *string `form:"rate_interval"`
+	// The name of the person or entity renting the car.
+	RenterName *string `form:"renter_name"`
+	// Car return address.
+	ReturnAddress *AddressParams `form:"return_address"`
+	// Car return time. Measured in seconds since the Unix epoch.
+	ReturnAt *int64 `form:"return_at"`
+	// Indicates whether the goods or services are tax-exempt or tax is not collected.
+	TaxExempt *bool `form:"tax_exempt"`
+}
+
+// The individual flight segments associated with the trip.
+type ChargeCapturePaymentDetailsFlightSegmentParams struct {
+	// The International Air Transport Association (IATA) airport code for the arrival airport.
+	ArrivalAirport *string `form:"arrival_airport"`
+	// The arrival time for the flight segment. Measured in seconds since the Unix epoch.
+	ArrivesAt *int64 `form:"arrives_at"`
+	// The International Air Transport Association (IATA) carrier code of the carrier operating the flight segment.
+	Carrier *string `form:"carrier"`
+	// The departure time for the flight segment. Measured in seconds since the Unix epoch.
+	DepartsAt *int64 `form:"departs_at"`
+	// The International Air Transport Association (IATA) airport code for the departure airport.
+	DepartureAirport *string `form:"departure_airport"`
+	// The flight number associated with the segment
+	FlightNumber *string `form:"flight_number"`
+	// The fare class for the segment.
+	ServiceClass *string `form:"service_class"`
+}
+
+// Flight reservation details for this PaymentIntent
+type ChargeCapturePaymentDetailsFlightParams struct {
+	// The agency number (i.e. International Air Transport Association (IATA) agency number) of the travel agency that made the booking.
+	AgencyNumber *string `form:"agency_number"`
+	// The International Air Transport Association (IATA) carrier code of the carrier that issued the ticket.
+	Carrier *string `form:"carrier"`
+	// The name of the person or entity on the reservation.
+	PassengerName *string `form:"passenger_name"`
+	// The individual flight segments associated with the trip.
+	Segments []*ChargeCapturePaymentDetailsFlightSegmentParams `form:"segments"`
+	// The ticket number associated with the travel reservation.
+	TicketNumber *string `form:"ticket_number"`
+}
+
+// Lodging reservation details for this PaymentIntent
+type ChargeCapturePaymentDetailsLodgingParams struct {
+	// The lodging location's address.
+	Address *AddressParams `form:"address"`
+	// The number of adults on the booking
+	Adults *int64 `form:"adults"`
+	// The booking number associated with the lodging reservation.
+	BookingNumber *string `form:"booking_number"`
+	// The lodging category
+	Category *string `form:"category"`
+	// Loding check-in time. Measured in seconds since the Unix epoch.
+	CheckinAt *int64 `form:"checkin_at"`
+	// Lodging check-out time. Measured in seconds since the Unix epoch.
+	CheckoutAt *int64 `form:"checkout_at"`
+	// The customer service phone number of the lodging company.
+	CustomerServicePhoneNumber *string `form:"customer_service_phone_number"`
+	// The daily lodging room rate.
+	DailyRoomRateAmount *int64 `form:"daily_room_rate_amount"`
+	// List of additional charges being billed.
+	ExtraCharges []*string `form:"extra_charges"`
+	// Indicates whether the lodging location is compliant with the Fire Safety Act.
+	FireSafetyActCompliance *bool `form:"fire_safety_act_compliance"`
+	// The name of the lodging location.
+	Name *string `form:"name"`
+	// Indicates if the customer did not keep their booking while failing to cancel the reservation.
+	NoShow *bool `form:"no_show"`
+	// The phone number of the lodging location.
+	PropertyPhoneNumber *string `form:"property_phone_number"`
+	// The number of room nights
+	RoomNights *int64 `form:"room_nights"`
+	// The total tax amount associating with the room reservation.
+	TotalRoomTaxAmount *int64 `form:"total_room_tax_amount"`
+	// The total tax amount
+	TotalTaxAmount *int64 `form:"total_tax_amount"`
+}
+
+// Provides industry-specific information about the charge.
+type ChargeCapturePaymentDetailsParams struct {
+	// Car rental details for this PaymentIntent.
+	CarRental *ChargeCapturePaymentDetailsCarRentalParams `form:"car_rental"`
+	// Flight reservation details for this PaymentIntent
+	Flight *ChargeCapturePaymentDetailsFlightParams `form:"flight"`
+	// Lodging reservation details for this PaymentIntent
+	Lodging *ChargeCapturePaymentDetailsLodgingParams `form:"lodging"`
 }
 
 // An optional dictionary including the account to automatically transfer to as part of a destination charge. [See the Connect documentation](https://stripe.com/docs/connect/destination-charges) for details.
@@ -378,6 +681,10 @@ type ChargeCaptureParams struct {
 	// An application fee amount to add on to this charge, which must be less than or equal to the original amount.
 	ApplicationFeeAmount *int64   `form:"application_fee_amount"`
 	ExchangeRate         *float64 `form:"exchange_rate"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Provides industry-specific information about the charge.
+	PaymentDetails *ChargeCapturePaymentDetailsParams `form:"payment_details"`
 	// The email address to send this charge's receipt to. This will override the previously-specified email address for this charge, if one was set. Receipts will not be sent in test mode.
 	ReceiptEmail *string `form:"receipt_email"`
 	// For card charges, use `statement_descriptor_suffix` instead. Otherwise, you can use this value as the complete description of a charge on your customers' statements. Must contain at least one letter, maximum 22 characters.
@@ -389,6 +696,12 @@ type ChargeCaptureParams struct {
 	// A string that identifies this transaction as part of a group. `transfer_group` may only be provided if it has not been set. See the [Connect documentation](https://stripe.com/docs/connect/separate-charges-and-transfers#transfer-options) for details.
 	TransferGroup *string `form:"transfer_group"`
 }
+
+// AddExpand appends a new field to expand.
+func (p *ChargeCaptureParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 type ChargeBillingDetails struct {
 	// Billing address.
 	Address *Address `json:"address"`
@@ -509,6 +822,8 @@ type ChargePaymentMethodDetailsACSSDebit struct {
 }
 type ChargePaymentMethodDetailsAffirm struct{}
 type ChargePaymentMethodDetailsAfterpayClearpay struct {
+	// The Afterpay order ID associated with this payment intent.
+	OrderID string `json:"order_id"`
 	// Order identifier shown to the merchant in Afterpay's online portal.
 	Reference string `json:"reference"`
 }
@@ -575,6 +890,14 @@ type ChargePaymentMethodDetailsCardChecks struct {
 	// If a CVC was provided, results of the check, one of `pass`, `fail`, `unavailable`, or `unchecked`.
 	CVCCheck ChargePaymentMethodDetailsCardChecksCVCCheck `json:"cvc_check"`
 }
+type ChargePaymentMethodDetailsCardExtendedAuthorization struct {
+	// Indicates whether or not the capture window is extended beyond the standard authorization.
+	Status ChargePaymentMethodDetailsCardExtendedAuthorizationStatus `json:"status"`
+}
+type ChargePaymentMethodDetailsCardIncrementalAuthorization struct {
+	// Indicates whether or not the incremental authorization feature is supported.
+	Status ChargePaymentMethodDetailsCardIncrementalAuthorizationStatus `json:"status"`
+}
 
 // Installment details for this payment (Mexico only).
 //
@@ -583,11 +906,21 @@ type ChargePaymentMethodDetailsCardInstallments struct {
 	// Installment plan selected for the payment.
 	Plan *PaymentIntentPaymentMethodOptionsCardInstallmentsPlan `json:"plan"`
 }
+type ChargePaymentMethodDetailsCardMulticapture struct {
+	// Indicates whether or not multiple captures are supported.
+	Status ChargePaymentMethodDetailsCardMulticaptureStatus `json:"status"`
+}
 
 // If this card has network token credentials, this contains the details of the network token credentials.
 type ChargePaymentMethodDetailsCardNetworkToken struct {
 	// Indicates if Stripe used a network token, either user provided or Stripe managed when processing the transaction.
 	Used bool `json:"used"`
+}
+type ChargePaymentMethodDetailsCardOvercapture struct {
+	// The maximum amount that can be captured.
+	MaximumAmountCapturable int64 `json:"maximum_amount_capturable"`
+	// Indicates whether or not the authorized amount can be over-captured.
+	Status ChargePaymentMethodDetailsCardOvercaptureStatus `json:"status"`
 }
 
 // Populated if this transaction used 3D Secure authentication.
@@ -644,6 +977,8 @@ type ChargePaymentMethodDetailsCardWallet struct {
 	VisaCheckout *ChargePaymentMethodDetailsCardWalletVisaCheckout `json:"visa_checkout"`
 }
 type ChargePaymentMethodDetailsCard struct {
+	// The authorized amount.
+	AmountAuthorized int64 `json:"amount_authorized"`
 	// Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
 	Brand PaymentMethodCardBrand `json:"brand"`
 	// Check results by Card networks on Card address and CVC at time of payment.
@@ -653,13 +988,15 @@ type ChargePaymentMethodDetailsCard struct {
 	// Two-digit number representing the card's expiration month.
 	ExpMonth int64 `json:"exp_month"`
 	// Four-digit number representing the card's expiration year.
-	ExpYear int64 `json:"exp_year"`
+	ExpYear               int64                                                `json:"exp_year"`
+	ExtendedAuthorization *ChargePaymentMethodDetailsCardExtendedAuthorization `json:"extended_authorization"`
 	// Uniquely identifies this particular card number. You can use this attribute to check whether two customers who've signed up with you are using the same card number, for example. For payment methods that tokenize card information (Apple Pay, Google Pay), the tokenized number might be provided instead of the underlying card number.
 	//
-	// *Starting May 1, 2021, card fingerprint in India for Connect will change to allow two fingerprints for the same card --- one for India and one for the rest of the world.*
+	// *As of May 1, 2021, card fingerprint in India for Connect changed to allow two fingerprints for the same card---one for India and one for the rest of the world.*
 	Fingerprint string `json:"fingerprint"`
 	// Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
-	Funding CardFunding `json:"funding"`
+	Funding                  CardFunding                                             `json:"funding"`
+	IncrementalAuthorization *ChargePaymentMethodDetailsCardIncrementalAuthorization `json:"incremental_authorization"`
 	// Installment details for this payment (Mexico only).
 	//
 	// For more information, see the [installments integration guide](https://stripe.com/docs/payments/installments).
@@ -669,11 +1006,13 @@ type ChargePaymentMethodDetailsCard struct {
 	// ID of the mandate used to make this payment or created by it.
 	Mandate string `json:"mandate"`
 	// True if this payment was marked as MOTO and out of scope for SCA.
-	MOTO bool `json:"moto"`
+	MOTO         bool                                        `json:"moto"`
+	Multicapture *ChargePaymentMethodDetailsCardMulticapture `json:"multicapture"`
 	// Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
 	Network ChargePaymentMethodDetailsCardNetwork `json:"network"`
 	// If this card has network token credentials, this contains the details of the network token credentials.
 	NetworkToken *ChargePaymentMethodDetailsCardNetworkToken `json:"network_token"`
+	Overcapture  *ChargePaymentMethodDetailsCardOvercapture  `json:"overcapture"`
 	// Populated if this transaction used 3D Secure authentication.
 	ThreeDSecure *ChargePaymentMethodDetailsCardThreeDSecure `json:"three_d_secure"`
 	// If this Card is part of a card wallet, this contains the details of the card wallet.
@@ -728,7 +1067,7 @@ type ChargePaymentMethodDetailsCardPresent struct {
 	ExpYear int64 `json:"exp_year"`
 	// Uniquely identifies this particular card number. You can use this attribute to check whether two customers who've signed up with you are using the same card number, for example. For payment methods that tokenize card information (Apple Pay, Google Pay), the tokenized number might be provided instead of the underlying card number.
 	//
-	// *Starting May 1, 2021, card fingerprint in India for Connect will change to allow two fingerprints for the same card --- one for India and one for the rest of the world.*
+	// *As of May 1, 2021, card fingerprint in India for Connect changed to allow two fingerprints for the same card---one for India and one for the rest of the world.*
 	Fingerprint string `json:"fingerprint"`
 	// Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
 	Funding CardFunding `json:"funding"`
@@ -795,7 +1134,7 @@ type ChargePaymentMethodDetailsGrabpay struct {
 	TransactionID string `json:"transaction_id"`
 }
 type ChargePaymentMethodDetailsIDEAL struct {
-	// The customer's bank. Can be one of `abn_amro`, `asn_bank`, `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `rabobank`, `regiobank`, `revolut`, `sns_bank`, `triodos_bank`, `van_lanschot`, or `yoursafe`.
+	// The customer's bank. Can be one of `abn_amro`, `asn_bank`, `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `n26`, `rabobank`, `regiobank`, `revolut`, `sns_bank`, `triodos_bank`, `van_lanschot`, or `yoursafe`.
 	Bank string `json:"bank"`
 	// The Bank Identifier Code of the customer's bank.
 	BIC string `json:"bic"`
@@ -846,7 +1185,7 @@ type ChargePaymentMethodDetailsInteracPresent struct {
 	ExpYear int64 `json:"exp_year"`
 	// Uniquely identifies this particular card number. You can use this attribute to check whether two customers who've signed up with you are using the same card number, for example. For payment methods that tokenize card information (Apple Pay, Google Pay), the tokenized number might be provided instead of the underlying card number.
 	//
-	// *Starting May 1, 2021, card fingerprint in India for Connect will change to allow two fingerprints for the same card --- one for India and one for the rest of the world.*
+	// *As of May 1, 2021, card fingerprint in India for Connect changed to allow two fingerprints for the same card---one for India and one for the rest of the world.*
 	Fingerprint string `json:"fingerprint"`
 	// Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
 	Funding string `json:"funding"`
@@ -937,8 +1276,22 @@ type ChargePaymentMethodDetailsPaypal struct {
 	PayerName string `json:"payer_name"`
 	// The level of protection offered as defined by PayPal Seller Protection for Merchants, for this transaction.
 	SellerProtection *ChargePaymentMethodDetailsPaypalSellerProtection `json:"seller_protection"`
+	// The shipping address for the customer, as supplied by the merchant at the point of payment
+	// execution. This shipping address will not be updated if the merchant updates the shipping
+	// address on the PaymentIntent after the PaymentIntent was successfully confirmed.
+	Shipping *Address `json:"shipping"`
 	// A unique ID generated by PayPal for this transaction.
 	TransactionID string `json:"transaction_id"`
+	// The shipping address for the customer, as supplied by the merchant at the point of payment
+	// execution. This shipping address will not be updated if the merchant updates the shipping
+	// address on the PaymentIntent after the PaymentIntent was successfully confirmed.
+	VerifiedAddress *Address `json:"verified_address"`
+	// Owner's verified email. Values are verified or provided by PayPal directly
+	// (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+	VerifiedEmail string `json:"verified_email"`
+	// Owner's verified full name. Values are verified or provided by PayPal directly
+	// (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+	VerifiedName string `json:"verified_name"`
 }
 type ChargePaymentMethodDetailsPix struct {
 	// Unique transaction id generated by BCB
@@ -1085,9 +1438,9 @@ type Charge struct {
 	APIResource
 	// Amount intended to be collected by this payment. A positive integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). The minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts). The amount value supports up to eight digits (e.g., a value of 99999999 for a USD charge of $999,999.99).
 	Amount int64 `json:"amount"`
-	// Amount in %s captured (can be less than the amount attribute on the charge if a partial capture was made).
+	// Amount in cents (or local equivalent) captured (can be less than the amount attribute on the charge if a partial capture was made).
 	AmountCaptured int64 `json:"amount_captured"`
-	// Amount in %s refunded (can be less than the amount attribute on the charge if a partial refund was issued).
+	// Amount in cents (or local equivalent) refunded (can be less than the amount attribute on the charge if a partial refund was issued).
 	AmountRefunded int64 `json:"amount_refunded"`
 	// ID of the Connect application that created the charge.
 	Application *Application `json:"application"`
@@ -1112,10 +1465,6 @@ type Charge struct {
 	Customer *Customer `json:"customer"`
 	// An arbitrary string attached to the object. Often useful for displaying to users.
 	Description string `json:"description"`
-	// ID of an existing, connected Stripe account to transfer funds to if `transfer_data` was specified in the charge request.
-	Destination *Account `json:"destination"`
-	// Details about the dispute if the charge has been disputed.
-	Dispute *Dispute `json:"dispute"`
 	// Whether the charge has been disputed.
 	Disputed bool `json:"disputed"`
 	// ID of the balance transaction that describes the reversal of the balance on your account due to payment failure.

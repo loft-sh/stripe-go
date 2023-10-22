@@ -30,7 +30,7 @@ const (
 	CustomerTaxLocationSourceShippingDestination CustomerTaxLocationSource = "shipping_destination"
 )
 
-// Describes the customer's tax exemption status. One of `none`, `exempt`, or `reverse`. When set to `reverse`, invoice and receipt PDFs include the text **"Reverse charge"**.
+// Describes the customer's tax exemption status, which is `none`, `exempt`, or `reverse`. When set to `reverse`, invoice and receipt PDFs include the following text: **"Reverse charge"**.
 type CustomerTaxExempt string
 
 // List of values that CustomerTaxExempt can take
@@ -46,8 +46,15 @@ const (
 // to an hour behind during outages. Search functionality is not available to merchants in India.
 type CustomerSearchParams struct {
 	SearchParams `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
 	Page *string `form:"page"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerSearchParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Returns a list of your customers. The customers are returned sorted by creation date, with the most recent customers appearing first.
@@ -57,8 +64,15 @@ type CustomerListParams struct {
 	CreatedRange *RangeQueryParams `form:"created"`
 	// A case-sensitive filter on the list based on the customer's `email` field. The value must be a string.
 	Email *string `form:"email"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Provides a list of customers that are associated with the specified test clock. The response will not include customers with test clocks if this parameter is not set.
 	TestClock *string `form:"test_clock"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Settings controlling the behavior of the customer's cash balance,
@@ -119,7 +133,7 @@ type CustomerTaxParams struct {
 
 // The customer's tax IDs.
 type CustomerTaxIDDataParams struct {
-	// Type of the tax ID, one of `ae_trn`, `au_abn`, `au_arn`, `bg_uic`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `ph_tin`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, or `za_vat`
+	// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `ar_cuit`, `au_abn`, `au_arn`, `bg_uic`, `bo_tin`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sv_nit`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, `uy_ruc`, `ve_rif`, `vn_tin`, or `za_vat`
 	Type *string `form:"type"`
 	// Value of the tax ID.
 	Value *string `form:"value"`
@@ -145,10 +159,14 @@ type CustomerParams struct {
 	Description *string `form:"description"`
 	// Customer's email address. It's displayed alongside the customer in your dashboard and can be useful for searching and tracking. This may be up to *512 characters*.
 	Email *string `form:"email"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The prefix for the customer used to generate unique invoice numbers. Must be 3–12 uppercase letters or numbers.
 	InvoicePrefix *string `form:"invoice_prefix"`
 	// Default invoice settings for this customer.
 	InvoiceSettings *CustomerInvoiceSettingsParams `form:"invoice_settings"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// The customer's full name or business name.
 	Name *string `form:"name"`
 	// The sequence to be used on the customer's next invoice. Defaults to 1.
@@ -174,18 +192,46 @@ type CustomerParams struct {
 	Validate  *bool   `form:"validate"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *CustomerParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CustomerParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // Returns a list of PaymentMethods for a given Customer
 type CustomerListPaymentMethodsParams struct {
 	ListParams `form:"*"`
 	Customer   *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// An optional filter on the list, based on the object `type` field. Without the filter, the list includes all current and future payment method types. If your integration expects only one type of payment method in the response, make sure to provide a type value in the request.
 	Type *string `form:"type"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerListPaymentMethodsParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Retrieves a PaymentMethod object for a given Customer.
 type CustomerRetrievePaymentMethodParams struct {
 	Params   `form:"*"`
 	Customer *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerRetrievePaymentMethodParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Configuration for eu_bank_transfer funding type.
@@ -215,8 +261,15 @@ type CustomerCreateFundingInstructionsParams struct {
 	BankTransfer *CustomerCreateFundingInstructionsBankTransferParams `form:"bank_transfer"`
 	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
 	Currency *string `form:"currency"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The `funding_type` to get the instructions for.
 	FundingType *string `form:"funding_type"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerCreateFundingInstructionsParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Removes the currently applied discount on a customer.
@@ -266,16 +319,16 @@ type CustomerTax struct {
 	Location *CustomerTaxLocation `json:"location"`
 }
 
-// This object represents a customer of your business. It lets you create recurring charges and track payments that belong to the same customer.
+// This object represents a customer of your business. Use it to create recurring charges and track payments that belong to the same customer.
 //
 // Related guide: [Save a card during payment](https://stripe.com/docs/payments/save-during-payment)
 type Customer struct {
 	APIResource
 	// The customer's address.
 	Address *Address `json:"address"`
-	// Current balance, if any, being stored on the customer. If negative, the customer has credit to apply to their next invoice. If positive, the customer has an amount owed that will be added to their next invoice. The balance does not refer to any unpaid invoices; it solely takes into account amounts that have yet to be successfully applied to any invoice. This balance is only taken into account as invoices are finalized.
+	// The current balance, if any, that's stored on the customer. If negative, the customer has credit to apply to their next invoice. If positive, the customer has an amount owed that's added to their next invoice. The balance only considers amounts that Stripe hasn't successfully applied to any invoice. It doesn't reflect unpaid invoices. This balance is only taken into account after invoices finalize.
 	Balance int64 `json:"balance"`
-	// The current funds being held by Stripe on behalf of the customer. These funds can be applied towards payment intents with source "cash_balance". The settings[reconciliation_mode] field describes whether these funds are applied to such payment intents manually or automatically.
+	// The current funds being held by Stripe on behalf of the customer. You can apply these funds towards payment intents when the source is "cash_balance". The `settings[reconciliation_mode]` field describes if these funds apply to these payment intents manually or automatically.
 	CashBalance *CashBalance `json:"cash_balance"`
 	// Time at which the object was created. Measured in seconds since the Unix epoch.
 	Created int64 `json:"created"`
@@ -283,12 +336,14 @@ type Customer struct {
 	Currency Currency `json:"currency"`
 	// ID of the default payment source for the customer.
 	//
-	// If you are using payment methods created via the PaymentMethods API, see the [invoice_settings.default_payment_method](https://stripe.com/docs/api/customers/object#customer_object-invoice_settings-default_payment_method) field instead.
+	// If you use payment methods created through the PaymentMethods API, see the [invoice_settings.default_payment_method](https://stripe.com/docs/api/customers/object#customer_object-invoice_settings-default_payment_method) field instead.
 	DefaultSource *PaymentSource `json:"default_source"`
 	Deleted       bool           `json:"deleted"`
-	// When the customer's latest invoice is billed by charging automatically, `delinquent` is `true` if the invoice's latest charge failed. When the customer's latest invoice is billed by sending an invoice, `delinquent` is `true` if the invoice isn't paid by its due date.
+	// Tracks the most recent state change on any invoice belonging to the customer. Paying an invoice or marking it uncollectible via the API will set this field to false. An automatic payment failure or passing the `invoice.due_date` will set this field to `true`.
 	//
-	// If an invoice is marked uncollectible by [dunning](https://stripe.com/docs/billing/automatic-collection), `delinquent` doesn't get reset to `false`.
+	// If an invoice becomes uncollectible by [dunning](https://stripe.com/docs/billing/automatic-collection), `delinquent` doesn't reset to `false`.
+	//
+	// If you care whether the customer has paid their most recent subscription invoice, use `subscription.status` instead. Paying or marking uncollectible any customer invoice regardless of whether it is the latest invoice for a subscription will always set this field to `false`.
 	Delinquent bool `json:"delinquent"`
 	// An arbitrary string attached to the object. Often useful for displaying to users.
 	Description string `json:"description"`
@@ -298,7 +353,7 @@ type Customer struct {
 	Email string `json:"email"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
-	// The current multi-currency balances, if any, being stored on the customer. If positive in a currency, the customer has a credit to apply to their next invoice denominated in that currency. If negative, the customer has an amount owed that will be added to their next invoice denominated in that currency. These balances do not refer to any unpaid invoices. They solely track amounts that have yet to be successfully applied to any invoice. A balance in a particular currency is only applied to any invoice as an invoice in that currency is finalized.
+	// The current multi-currency balances, if any, that's stored on the customer. If positive in a currency, the customer has a credit to apply to their next invoice denominated in that currency. If negative, the customer has an amount owed that's added to their next invoice denominated in that currency. These balances don't apply to unpaid invoices. They solely track amounts that Stripe hasn't successfully applied to any invoice. Stripe only applies a balance in a specific currency to an invoice after that invoice (which is in the same currency) finalizes.
 	InvoiceCreditBalance map[string]int64 `json:"invoice_credit_balance"`
 	// The prefix for the customer used to generate unique invoice numbers.
 	InvoicePrefix   string                   `json:"invoice_prefix"`
@@ -309,7 +364,7 @@ type Customer struct {
 	Metadata map[string]string `json:"metadata"`
 	// The customer's full name or business name.
 	Name string `json:"name"`
-	// The suffix of the customer's next invoice number, e.g., 0001.
+	// The suffix of the customer's next invoice number (for example, 0001).
 	NextInvoiceSequence int64 `json:"next_invoice_sequence"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
@@ -323,11 +378,11 @@ type Customer struct {
 	// The customer's current subscriptions, if any.
 	Subscriptions *SubscriptionList `json:"subscriptions"`
 	Tax           *CustomerTax      `json:"tax"`
-	// Describes the customer's tax exemption status. One of `none`, `exempt`, or `reverse`. When set to `reverse`, invoice and receipt PDFs include the text **"Reverse charge"**.
+	// Describes the customer's tax exemption status, which is `none`, `exempt`, or `reverse`. When set to `reverse`, invoice and receipt PDFs include the following text: **"Reverse charge"**.
 	TaxExempt CustomerTaxExempt `json:"tax_exempt"`
 	// The customer's tax IDs.
 	TaxIDs *TaxIDList `json:"tax_ids"`
-	// ID of the test clock this customer belongs to.
+	// ID of the test clock that this customer belongs to.
 	TestClock *TestHelpersTestClock `json:"test_clock"`
 }
 

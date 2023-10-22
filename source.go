@@ -6,8 +6,6 @@
 
 package stripe
 
-import "encoding/json"
-
 // The status of the code verification, either `pending` (awaiting verification, `attempts_remaining` should be greater than 0), `succeeded` (successful verification) or `failed` (failed verification, cannot be verified anymore as `attempts_remaining` should be 0).
 type SourceCodeVerificationStatus string
 
@@ -106,6 +104,13 @@ const (
 type SourceDetachParams struct {
 	Params   `form:"*"`
 	Customer *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SourceDetachParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Retrieves an existing source object. Supply the unique source ID from a source creation request and Stripe will return the corresponding up-to-date source object information.
@@ -119,10 +124,14 @@ type SourceParams struct {
 	Currency *string `form:"currency"`
 	// The `Customer` to whom the original source is attached to. Must be set when the original source is not a `Source` (e.g., `Card`).
 	Customer *string `form:"customer"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The authentication `flow` of the source to create. `flow` is one of `redirect`, `receiver`, `code_verification`, `none`. It is generally inferred unless a type supports multiple flows.
 	Flow *string `form:"flow"`
 	// Information about a mandate possibility attached to a source object (generally for bank debits) as well as its acceptance status.
 	Mandate *SourceMandateParams `form:"mandate"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// The source to share.
 	OriginalSource *string `form:"original_source"`
 	// Information about the owner of the payment instrument that may be used or required by particular source types.
@@ -140,6 +149,20 @@ type SourceParams struct {
 	// The `type` of the source to create. Required unless `customer` and `original_source` are specified (see the [Cloning card Sources](https://stripe.com/docs/sources/connect#cloning-card-sources) guide)
 	Type  *string `form:"type"`
 	Usage *string `form:"usage"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SourceParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *SourceParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // The parameters required to store a mandate accepted offline. Should only be set if `mandate[type]` is `offline`
@@ -413,6 +436,17 @@ type SourceOwner struct {
 type SourceP24 struct {
 	Reference string `json:"reference"`
 }
+type SourcePaypal struct {
+	BillingAgreement            string `json:"billing_agreement"`
+	Fingerprint                 string `json:"fingerprint"`
+	PayerID                     string `json:"payer_id"`
+	ReferenceID                 string `json:"reference_id"`
+	ReferenceTransactionAmount  string `json:"reference_transaction_amount"`
+	ReferenceTransactionCharged bool   `json:"reference_transaction_charged"`
+	StatementDescriptor         string `json:"statement_descriptor"`
+	TransactionID               string `json:"transaction_id"`
+	VerifiedEmail               string `json:"verified_email"`
+}
 type SourceReceiver struct {
 	// The address of the receiver source. This is the value that should be communicated to the customer to send their funds to.
 	Address string `json:"address"`
@@ -572,6 +606,7 @@ type Source struct {
 	// Information about the owner of the payment instrument that may be used or required by particular source types.
 	Owner              *SourceOwner              `json:"owner"`
 	P24                *SourceP24                `json:"p24"`
+	Paypal             *SourcePaypal             `json:"paypal"`
 	Receiver           *SourceReceiver           `json:"receiver"`
 	Redirect           *SourceRedirect           `json:"redirect"`
 	SEPACreditTransfer *SourceSEPACreditTransfer `json:"sepa_credit_transfer"`
@@ -588,23 +623,4 @@ type Source struct {
 	// Either `reusable` or `single_use`. Whether this source should be reusable or not. Some source types may or may not be reusable by construction, while others may leave the option at creation. If an incompatible value is passed, an error will be returned.
 	Usage  SourceUsage   `json:"usage"`
 	WeChat *SourceWeChat `json:"wechat"`
-}
-
-// UnmarshalJSON handles deserialization of a Source.
-// This custom unmarshaling is needed because the resulting
-// property may be an id or the full struct if it was expanded.
-func (s *Source) UnmarshalJSON(data []byte) error {
-	if id, ok := ParseID(data); ok {
-		s.ID = id
-		return nil
-	}
-
-	type source Source
-	var v source
-	if err := json.Unmarshal(data, &v); err != nil {
-		return err
-	}
-
-	*s = Source(v)
-	return nil
 }

@@ -8,10 +8,19 @@ package stripe
 
 import (
 	"encoding/json"
-	"github.com/stripe/stripe-go/v74/form"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
-// The customer submitted reason for why they cancelled, if the subscription was cancelled explicitly by the user.
+// Type of the account referenced.
+type SubscriptionAutomaticTaxLiabilityType string
+
+// List of values that SubscriptionAutomaticTaxLiabilityType can take
+const (
+	SubscriptionAutomaticTaxLiabilityTypeAccount SubscriptionAutomaticTaxLiabilityType = "account"
+	SubscriptionAutomaticTaxLiabilityTypeSelf    SubscriptionAutomaticTaxLiabilityType = "self"
+)
+
+// The customer submitted reason for why they canceled, if the subscription was canceled explicitly by the user.
 type SubscriptionCancellationDetailsFeedback string
 
 // List of values that SubscriptionCancellationDetailsFeedback can take
@@ -26,7 +35,7 @@ const (
 	SubscriptionCancellationDetailsFeedbackUnused          SubscriptionCancellationDetailsFeedback = "unused"
 )
 
-// Why this subscription was cancelled.
+// Why this subscription was canceled.
 type SubscriptionCancellationDetailsReason string
 
 // List of values that SubscriptionCancellationDetailsReason can take
@@ -124,8 +133,20 @@ type SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnec
 // List of values that SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission can take
 const (
 	SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionBalances      SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "balances"
+	SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionOwnership     SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "ownership"
 	SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionPaymentMethod SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "payment_method"
 	SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionTransactions  SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "transactions"
+)
+
+// Data features requested to be retrieved upon account creation.
+type SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch string
+
+// List of values that SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch can take
+const (
+	SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchBalances         SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "balances"
+	SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchInferredBalances SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "inferred_balances"
+	SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchOwnership        SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "ownership"
+	SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchTransactions     SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "transactions"
 )
 
 // Bank account verification method.
@@ -189,13 +210,22 @@ const (
 	SubscriptionPendingInvoiceItemIntervalIntervalYear  SubscriptionPendingInvoiceItemIntervalInterval = "year"
 )
 
+// Whether to cancel or preserve `prebilling` if the subscription is updated during the prebilled period.
+type SubscriptionPrebillingUpdateBehavior string
+
+// List of values that SubscriptionPrebillingUpdateBehavior can take
+const (
+	SubscriptionPrebillingUpdateBehaviorPrebill SubscriptionPrebillingUpdateBehavior = "prebill"
+	SubscriptionPrebillingUpdateBehaviorReset   SubscriptionPrebillingUpdateBehavior = "reset"
+)
+
 // Possible values are `incomplete`, `incomplete_expired`, `trialing`, `active`, `past_due`, `canceled`, or `unpaid`.
 //
 // For `collection_method=charge_automatically` a subscription moves into `incomplete` if the initial payment attempt fails. A subscription in this state can only have metadata and default_source updated. Once the first invoice is paid, the subscription moves into an `active` state. If the first invoice is not paid within 23 hours, the subscription transitions to `incomplete_expired`. This is a terminal state, the open invoice will be voided and no further invoices will be generated.
 //
 // A subscription that is currently in a trial period is `trialing` and moves to `active` when the trial period is over.
 //
-// If subscription `collection_method=charge_automatically` it becomes `past_due` when payment to renew it fails and `canceled` or `unpaid` (depending on your subscriptions settings) when Stripe has exhausted all payment retry attempts.
+// If subscription `collection_method=charge_automatically`, it becomes `past_due` when payment is required but cannot be paid (due to failed payment or awaiting additional user actions). Once Stripe has exhausted all payment retry attempts, the subscription will become `canceled` or `unpaid` (depending on your subscriptions settings).
 //
 // If subscription `collection_method=send_invoice` it becomes `past_due` when its invoice is not paid by the due date, and `canceled` or `unpaid` if it is still not paid by an additional deadline after that. Note that when a subscription has a status of `unpaid`, no subsequent invoices will be attempted (invoices will be created, but then immediately automatically closed). After receiving updated payment information from a customer, you may choose to reopen and pay their closed invoices.
 type SubscriptionStatus string
@@ -228,13 +258,28 @@ const (
 // to an hour behind during outages. Search functionality is not available to merchants in India.
 type SubscriptionSearchParams struct {
 	SearchParams `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
 	Page *string `form:"page"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SubscriptionSearchParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Filter subscriptions by their automatic tax settings.
+type SubscriptionListAutomaticTaxParams struct {
+	// Enabled automatic tax calculation which will automatically compute tax rates on all invoices generated by the subscription.
+	Enabled *bool `form:"enabled"`
 }
 
 // By default, returns a list of subscriptions that have not been canceled. In order to list canceled subscriptions, specify status=canceled.
 type SubscriptionListParams struct {
 	ListParams `form:"*"`
+	// Filter subscriptions by their automatic tax settings.
+	AutomaticTax *SubscriptionListAutomaticTaxParams `form:"automatic_tax"`
 	// The collection method of the subscriptions to retrieve. Either `charge_automatically` or `send_invoice`.
 	CollectionMethod        *string           `form:"collection_method"`
 	Created                 *int64            `form:"created"`
@@ -245,6 +290,8 @@ type SubscriptionListParams struct {
 	CurrentPeriodStartRange *RangeQueryParams `form:"current_period_start"`
 	// The ID of the customer whose subscriptions will be retrieved.
 	Customer *string `form:"customer"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The ID of the plan whose subscriptions will be retrieved.
 	Plan *string `form:"plan"`
 	// Filter for subscriptions that contain this recurring price ID.
@@ -255,8 +302,43 @@ type SubscriptionListParams struct {
 	TestClock *string `form:"test_clock"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *SubscriptionListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Time span for the redeemed discount.
+type SubscriptionAddInvoiceItemDiscountDiscountEndDurationParams struct {
+	// Specifies a type of interval unit. Either `day`, `week`, `month` or `year`.
+	Interval *string `form:"interval"`
+	// The number of intervals, as an whole number greater than 0. Stripe multiplies this by the interval type to get the overall duration.
+	IntervalCount *int64 `form:"interval_count"`
+}
+
+// Details to determine how long the discount should be applied for.
+type SubscriptionAddInvoiceItemDiscountDiscountEndParams struct {
+	// Time span for the redeemed discount.
+	Duration *SubscriptionAddInvoiceItemDiscountDiscountEndDurationParams `form:"duration"`
+	// A precise Unix timestamp for the discount to end. Must be in the future.
+	Timestamp *int64 `form:"timestamp"`
+	// The type of calculation made to determine when the discount ends.
+	Type *string `form:"type"`
+}
+
+// The coupons to redeem into discounts for the item.
+type SubscriptionAddInvoiceItemDiscountParams struct {
+	// ID of the coupon to create a new discount for.
+	Coupon *string `form:"coupon"`
+	// ID of an existing discount on the object (or one of its ancestors) to reuse.
+	Discount *string `form:"discount"`
+	// Details to determine how long the discount should be applied for.
+	DiscountEnd *SubscriptionAddInvoiceItemDiscountDiscountEndParams `form:"discount_end"`
+}
+
 // A list of prices and quantities that will generate invoice items appended to the next invoice for this subscription. You may pass up to 20 items.
 type SubscriptionAddInvoiceItemParams struct {
+	// The coupons to redeem into discounts for the item.
+	Discounts []*SubscriptionAddInvoiceItemDiscountParams `form:"discounts"`
 	// The ID of the price object.
 	Price *string `form:"price"`
 	// Data used to generate a new [Price](https://stripe.com/docs/api/prices) object inline.
@@ -267,10 +349,20 @@ type SubscriptionAddInvoiceItemParams struct {
 	TaxRates []*string `form:"tax_rates"`
 }
 
+// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+type SubscriptionAutomaticTaxLiabilityParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
 // Automatic tax settings for this subscription. We recommend you only include this parameter when the existing value is being changed.
 type SubscriptionAutomaticTaxParams struct {
 	// Enabled automatic tax calculation which will automatically compute tax rates on all invoices generated by the subscription.
 	Enabled *bool `form:"enabled"`
+	// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+	Liability *SubscriptionAutomaticTaxLiabilityParams `form:"liability"`
 }
 
 // Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. Pass an empty string to remove previously-defined thresholds.
@@ -279,6 +371,48 @@ type SubscriptionBillingThresholdsParams struct {
 	AmountGTE *int64 `form:"amount_gte"`
 	// Indicates if the `billing_cycle_anchor` should be reset when a threshold is reached. If true, `billing_cycle_anchor` will be updated to the date/time the threshold was last reached; otherwise, the value will remain unchanged.
 	ResetBillingCycleAnchor *bool `form:"reset_billing_cycle_anchor"`
+}
+
+// Time span for the redeemed discount.
+type SubscriptionDiscountDiscountEndDurationParams struct {
+	// Specifies a type of interval unit. Either `day`, `week`, `month` or `year`.
+	Interval *string `form:"interval"`
+	// The number of intervals, as an whole number greater than 0. Stripe multiplies this by the interval type to get the overall duration.
+	IntervalCount *int64 `form:"interval_count"`
+}
+
+// Details to determine how long the discount should be applied for.
+type SubscriptionDiscountDiscountEndParams struct {
+	// Time span for the redeemed discount.
+	Duration *SubscriptionDiscountDiscountEndDurationParams `form:"duration"`
+	// A precise Unix timestamp for the discount to end. Must be in the future.
+	Timestamp *int64 `form:"timestamp"`
+	// The type of calculation made to determine when the discount ends.
+	Type *string `form:"type"`
+}
+
+// The coupons to redeem into discounts for the subscription. If not specified or empty, inherits the discount from the subscription's customer.
+type SubscriptionDiscountParams struct {
+	// ID of the coupon to create a new discount for.
+	Coupon *string `form:"coupon"`
+	// ID of an existing discount on the object (or one of its ancestors) to reuse.
+	Discount *string `form:"discount"`
+	// Details to determine how long the discount should be applied for.
+	DiscountEnd *SubscriptionDiscountDiscountEndParams `form:"discount_end"`
+}
+
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type SubscriptionInvoiceSettingsIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// All invoices will be billed using the specified settings.
+type SubscriptionInvoiceSettingsParams struct {
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *SubscriptionInvoiceSettingsIssuerParams `form:"issuer"`
 }
 
 // A list of up to 20 subscription items, each with an attached price.
@@ -290,6 +424,8 @@ type SubscriptionItemsParams struct {
 	ClearUsage *bool `form:"clear_usage"`
 	// A flag that, if set to `true`, will delete the specified item.
 	Deleted *bool `form:"deleted"`
+	// The coupons to redeem into discounts for the subscription item.
+	Discounts []*SubscriptionItemDiscountParams `form:"discounts"`
 	// Subscription item to update.
 	ID *string `form:"id"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
@@ -304,6 +440,17 @@ type SubscriptionItemsParams struct {
 	Quantity *int64 `form:"quantity"`
 	// A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription. When updating, pass an empty string to remove previously-defined tax rates.
 	TaxRates []*string `form:"tax_rates"`
+	// Define options to configure the trial on the subscription item.
+	Trial *SubscriptionItemTrialParams `form:"trial"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *SubscriptionItemsParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Additional fields for Mandate creation
@@ -375,6 +522,8 @@ type SubscriptionPaymentSettingsPaymentMethodOptionsKonbiniParams struct{}
 type SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsParams struct {
 	// The list of permissions to request. If this parameter is passed, the `payment_method` permission must be included. Valid permissions include: `balances`, `ownership`, `payment_method`, and `transactions`.
 	Permissions []*string `form:"permissions"`
+	// List of data features that you would like to retrieve upon account creation.
+	Prefetch []*string `form:"prefetch"`
 }
 
 // This sub-hash contains details about the ACH direct debit payment method options to pass to the invoice's PaymentIntent.
@@ -419,9 +568,17 @@ type SubscriptionPendingInvoiceItemIntervalParams struct {
 	IntervalCount *int64 `form:"interval_count"`
 }
 
+// If specified, the invoicing for the given billing cycle iterations will be processed now.
+type SubscriptionPrebillingParams struct {
+	// This is used to determine the number of billing cycles to prebill.
+	Iterations *int64 `form:"iterations"`
+	// Whether to cancel or preserve `prebilling` if the subscription is updated during the prebilled period. The default value is `reset`.
+	UpdateBehavior *string `form:"update_behavior"`
+}
+
 // If specified, the funds from the subscription's invoices will be transferred to the destination and the ID of the resulting transfers will be found on the resulting charges.
 type SubscriptionTransferDataParams struct {
-	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the destination account. By default, the entire amount is transferred to the destination.
+	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice total that will be transferred to the destination account. By default, the entire amount is transferred to the destination.
 	AmountPercent *float64 `form:"amount_percent"`
 	// ID of an existing, connected Stripe account.
 	Destination *string `form:"destination"`
@@ -450,13 +607,13 @@ type SubscriptionParams struct {
 	Params `form:"*"`
 	// A list of prices and quantities that will generate invoice items appended to the next invoice for this subscription. You may pass up to 20 items.
 	AddInvoiceItems []*SubscriptionAddInvoiceItemParams `form:"add_invoice_items"`
-	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the application owner's Stripe account. The request must be made by a platform account on a connected account in order to set an application fee percentage. For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
+	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice total that will be transferred to the application owner's Stripe account. The request must be made by a platform account on a connected account in order to set an application fee percentage. For more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
 	ApplicationFeePercent *float64 `form:"application_fee_percent"`
 	// Automatic tax settings for this subscription. We recommend you only include this parameter when the existing value is being changed.
 	AutomaticTax *SubscriptionAutomaticTaxParams `form:"automatic_tax"`
 	// For new subscriptions, a past timestamp to backdate the subscription's start date to. If set, the first invoice will contain a proration for the timespan between the start date and the current time. Can be combined with trials and the billing cycle anchor.
 	BackdateStartDate *int64 `form:"backdate_start_date"`
-	// Either `now` or `unchanged`. Setting the value to `now` resets the subscription's billing cycle anchor to the current time (in UTC). For more information, see the billing cycle [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
+	// A future timestamp to anchor the subscription's [billing cycle](https://stripe.com/docs/subscriptions/billing-cycle). This is used to determine the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices. The timestamp is in UTC format.
 	BillingCycleAnchor          *int64 `form:"billing_cycle_anchor"`
 	BillingCycleAnchorNow       *bool  `form:"-"` // See custom AppendTo
 	BillingCycleAnchorUnchanged *bool  `form:"-"` // See custom AppendTo
@@ -486,27 +643,41 @@ type SubscriptionParams struct {
 	DefaultTaxRates []*string `form:"default_tax_rates"`
 	// The subscription's description, meant to be displayable to the customer. Use this field to optionally store an explanation of the subscription for rendering in Stripe surfaces.
 	Description *string `form:"description"`
+	// The coupons to redeem into discounts for the subscription. If not specified or empty, inherits the discount from the subscription's customer.
+	Discounts []*SubscriptionDiscountParams `form:"discounts"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// All invoices will be billed using the specified settings.
+	InvoiceSettings *SubscriptionInvoiceSettingsParams `form:"invoice_settings"`
 	// A list of up to 20 subscription items, each with an attached price.
 	Items []*SubscriptionItemsParams `form:"items"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// Indicates if a customer is on or off-session while an invoice payment is attempted.
 	OffSession *bool `form:"off_session"`
 	// The account on behalf of which to charge, for each of the subscription's invoices.
 	OnBehalfOf *string `form:"on_behalf_of"`
 	// If specified, payment collection for this subscription will be paused.
 	PauseCollection *SubscriptionPauseCollectionParams `form:"pause_collection"`
-	// Use `allow_incomplete` to transition the subscription to `status=past_due` if a payment is required but cannot be paid. This allows you to manage scenarios where additional user actions are needed to pay a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the default behavior.
+	// Only applies to subscriptions with `collection_method=charge_automatically`.
 	//
-	// Use `default_incomplete` to transition the subscription to `status=past_due` when payment is required and await explicit confirmation of the invoice's payment intent. This allows simpler management of scenarios where additional user actions are needed to pay a subscription's invoice. Such as failed payments, [SCA regulation](https://stripe.com/docs/billing/migration/strong-customer-authentication), or collecting a mandate for a bank debit payment method.
+	// Use `allow_incomplete` to create subscriptions with `status=incomplete` if the first invoice cannot be paid. Creating subscriptions with this status allows you to manage scenarios where additional user actions are needed to pay a subscription's invoice. For example, SCA regulation may require 3DS authentication to complete payment. See the [SCA Migration Guide](https://stripe.com/docs/billing/migration/strong-customer-authentication) for Billing to learn more. This is the default behavior.
 	//
-	// Use `pending_if_incomplete` to update the subscription using [pending updates](https://stripe.com/docs/billing/subscriptions/pending-updates). When you use `pending_if_incomplete` you can only pass the parameters [supported by pending updates](https://stripe.com/docs/billing/pending-updates-reference#supported-attributes).
+	// Use `default_incomplete` to create Subscriptions with `status=incomplete` when the first invoice requires payment, otherwise start as active. Subscriptions transition to `status=active` when successfully confirming the payment intent on the first invoice. This allows simpler management of scenarios where additional user actions are needed to pay a subscription's invoice. Such as failed payments, [SCA regulation](https://stripe.com/docs/billing/migration/strong-customer-authentication), or collecting a mandate for a bank debit payment method. If the payment intent is not confirmed within 23 hours subscriptions transition to `status=incomplete_expired`, which is a terminal state.
 	//
-	// Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not update the subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+	// Use `error_if_incomplete` if you want Stripe to return an HTTP 402 status code if a subscription's first invoice cannot be paid. For example, if a payment method requires 3DS authentication due to SCA regulation and further user action is needed, this parameter does not create a subscription and returns an error instead. This was the default behavior for API versions prior to 2019-03-14. See the [changelog](https://stripe.com/docs/upgrades#2019-03-14) to learn more.
+	//
+	// `pending_if_incomplete` is only used with updates and cannot be passed when creating a subscription.
+	//
+	// Subscriptions with `collection_method=send_invoice` are automatically activated regardless of the first invoice status.
 	PaymentBehavior *string `form:"payment_behavior"`
 	// Payment settings to pass to invoices created by the subscription.
 	PaymentSettings *SubscriptionPaymentSettingsParams `form:"payment_settings"`
 	// Specifies an interval for how often to bill for any pending invoice items. It is analogous to calling [Create an invoice](https://stripe.com/docs/api#create_invoice) for the given subscription at the specified interval.
 	PendingInvoiceItemInterval *SubscriptionPendingInvoiceItemIntervalParams `form:"pending_invoice_item_interval"`
-	// The promotion code to apply to this subscription. A promotion code applied to a subscription will only affect invoices created for that particular subscription.
+	// If specified, the invoicing for the given billing cycle iterations will be processed now.
+	Prebilling *SubscriptionPrebillingParams `form:"prebilling"`
+	// The API ID of a promotion code to apply to this subscription. A promotion code applied to a subscription will only affect invoices created for that particular subscription.
 	PromotionCode *string `form:"promotion_code"`
 	// Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. The default value is `create_prorations`.
 	ProrationBehavior *string `form:"proration_behavior"`
@@ -514,7 +685,7 @@ type SubscriptionParams struct {
 	ProrationDate *int64 `form:"proration_date"`
 	// If specified, the funds from the subscription's invoices will be transferred to the destination and the ID of the resulting transfers will be found on the resulting charges. This will be unset if you POST an empty value.
 	TransferData *SubscriptionTransferDataParams `form:"transfer_data"`
-	// Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. This will always overwrite any trials that might apply via a subscribed plan. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`.
+	// Unix timestamp representing the end of the trial period the customer will get before being charged for the first time. If set, trial_end will override the default trial period of the plan the customer is being subscribed to. The special value `now` can be provided to end the customer's trial immediately. Can be at most two years from `billing_cycle_anchor`. See [Using trial periods on subscriptions](https://stripe.com/docs/billing/subscriptions/trials) to learn more.
 	TrialEnd    *int64 `form:"trial_end"`
 	TrialEndNow *bool  `form:"-"` // See custom AppendTo
 	// Indicates if a plan's `trial_period_days` should be applied to the subscription. Setting `trial_end` per subscription is preferred, and this defaults to `false`. Setting this flag to `true` together with `trial_end` is not allowed. See [Using trial periods on subscriptions](https://stripe.com/docs/billing/subscriptions/trials) to learn more.
@@ -525,24 +696,38 @@ type SubscriptionParams struct {
 	TrialSettings *SubscriptionTrialSettingsParams `form:"trial_settings"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *SubscriptionParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *SubscriptionParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // AppendTo implements custom encoding logic for SubscriptionParams.
-func (s *SubscriptionParams) AppendTo(body *form.Values, keyParts []string) {
-	if BoolValue(s.BillingCycleAnchorNow) {
+func (p *SubscriptionParams) AppendTo(body *form.Values, keyParts []string) {
+	if BoolValue(p.BillingCycleAnchorNow) {
 		body.Add(form.FormatKey(append(keyParts, "billing_cycle_anchor")), "now")
 	}
-	if BoolValue(s.BillingCycleAnchorUnchanged) {
+	if BoolValue(p.BillingCycleAnchorUnchanged) {
 		body.Add(form.FormatKey(append(keyParts, "billing_cycle_anchor")), "unchanged")
 	}
-	if BoolValue(s.TrialEndNow) {
+	if BoolValue(p.TrialEndNow) {
 		body.Add(form.FormatKey(append(keyParts, "trial_end")), "now")
 	}
 }
 
 // Details about why this subscription was cancelled
 type SubscriptionCancellationDetailsParams struct {
-	// Additional comments about why the user canceled the subscription, if the subscription was cancelled explicitly by the user.
+	// Additional comments about why the user canceled the subscription, if the subscription was canceled explicitly by the user.
 	Comment *string `form:"comment"`
-	// The customer submitted reason for why they cancelled, if the subscription was cancelled explicitly by the user.
+	// The customer submitted reason for why they canceled, if the subscription was canceled explicitly by the user.
 	Feedback *string `form:"feedback"`
 }
 
@@ -556,9 +741,9 @@ type SubscriptionPauseCollectionParams struct {
 
 // Details about why this subscription was cancelled
 type SubscriptionCancelCancellationDetailsParams struct {
-	// Additional comments about why the user canceled the subscription, if the subscription was cancelled explicitly by the user.
+	// Additional comments about why the user canceled the subscription, if the subscription was canceled explicitly by the user.
 	Comment *string `form:"comment"`
-	// The customer submitted reason for why they cancelled, if the subscription was cancelled explicitly by the user.
+	// The customer submitted reason for why they canceled, if the subscription was canceled explicitly by the user.
 	Feedback *string `form:"feedback"`
 }
 
@@ -571,10 +756,17 @@ type SubscriptionCancelParams struct {
 	Params `form:"*"`
 	// Details about why this subscription was cancelled
 	CancellationDetails *SubscriptionCancelCancellationDetailsParams `form:"cancellation_details"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Will generate a final invoice that invoices for any un-invoiced metered usage and new/pending proration invoice items.
 	InvoiceNow *bool `form:"invoice_now"`
 	// Will generate a proration invoice item that credits remaining unused time until the subscription period end.
 	Prorate *bool `form:"prorate"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SubscriptionCancelParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Initiates resumption of a paused subscription, optionally resetting the billing cycle anchor and creating prorations. If a resumption invoice is generated, it must be paid or marked uncollectible before the subscription will be unpaused. If payment succeeds the subscription will become active, and if payment fails the subscription will be past_due. The resumption invoice will void automatically if not paid by the expiration date.
@@ -582,19 +774,36 @@ type SubscriptionResumeParams struct {
 	Params `form:"*"`
 	// Either `now` or `unchanged`. Setting the value to `now` resets the subscription's billing cycle anchor to the current time (in UTC). Setting the value to `unchanged` advances the subscription's billing cycle anchor to the period that surrounds the current time. For more information, see the billing cycle [documentation](https://stripe.com/docs/billing/subscriptions/billing-cycle).
 	BillingCycleAnchor *string `form:"billing_cycle_anchor"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Determines how to handle [prorations](https://stripe.com/docs/subscriptions/billing-cycle#prorations) when the billing cycle changes (e.g., when switching plans, resetting `billing_cycle_anchor=now`, or starting a trial), or if an item's `quantity` changes. The default value is `create_prorations`.
 	ProrationBehavior *string `form:"proration_behavior"`
 	// If set, the proration will be calculated as though the subscription was resumed at the given time. This can be used to apply exactly the same proration that was previewed with [upcoming invoice](https://stripe.com/docs/api#retrieve_customer_invoice) endpoint.
 	ProrationDate *int64 `form:"proration_date"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *SubscriptionResumeParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 // Removes the currently applied discount on a subscription.
 type SubscriptionDeleteDiscountParams struct {
 	Params `form:"*"`
 }
+
+// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+type SubscriptionAutomaticTaxLiability struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *Account `json:"account"`
+	// Type of the account referenced.
+	Type SubscriptionAutomaticTaxLiabilityType `json:"type"`
+}
 type SubscriptionAutomaticTax struct {
 	// Whether Stripe automatically computes tax on this subscription.
 	Enabled bool `json:"enabled"`
+	// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+	Liability *SubscriptionAutomaticTaxLiability `json:"liability"`
 }
 
 // Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period
@@ -607,11 +816,11 @@ type SubscriptionBillingThresholds struct {
 
 // Details about why this subscription was cancelled
 type SubscriptionCancellationDetails struct {
-	// Additional comments about why the user canceled the subscription, if the subscription was cancelled explicitly by the user.
+	// Additional comments about why the user canceled the subscription, if the subscription was canceled explicitly by the user.
 	Comment string `json:"comment"`
-	// The customer submitted reason for why they cancelled, if the subscription was cancelled explicitly by the user.
+	// The customer submitted reason for why they canceled, if the subscription was canceled explicitly by the user.
 	Feedback SubscriptionCancellationDetailsFeedback `json:"feedback"`
-	// Why this subscription was cancelled.
+	// Why this subscription was canceled.
 	Reason SubscriptionCancellationDetailsReason `json:"reason"`
 }
 
@@ -678,6 +887,8 @@ type SubscriptionPaymentSettingsPaymentMethodOptionsKonbini struct{}
 type SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnections struct {
 	// The list of permissions to request. The `payment_method` permission must be included.
 	Permissions []SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission `json:"permissions"`
+	// Data features requested to be retrieved upon account creation.
+	Prefetch []SubscriptionPaymentSettingsPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch `json:"prefetch"`
 }
 
 // This sub-hash contains details about the ACH direct debit payment method options to pass to invoices created by the subscription.
@@ -727,6 +938,8 @@ type SubscriptionPendingUpdate struct {
 	BillingCycleAnchor int64 `json:"billing_cycle_anchor"`
 	// The point after which the changes reflected by this update will be discarded and no longer applied.
 	ExpiresAt int64 `json:"expires_at"`
+	// The number of iterations of prebilling to apply.
+	PrebillingIterations int64 `json:"prebilling_iterations"`
 	// List of subscription items, each with an attached plan, that will be set if the update is applied.
 	SubscriptionItems []*SubscriptionItem `json:"subscription_items"`
 	// Unix timestamp representing the end of the trial period the customer will get before being charged for the first time, if the update is applied.
@@ -735,9 +948,21 @@ type SubscriptionPendingUpdate struct {
 	TrialFromPlan bool `json:"trial_from_plan"`
 }
 
+// Time period and invoice for a Subscription billed in advance.
+type SubscriptionPrebilling struct {
+	// ID of the prebilling invoice.
+	Invoice *Invoice `json:"invoice"`
+	// The end of the last period for which the invoice pre-bills.
+	PeriodEnd int64 `json:"period_end"`
+	// The start of the first period for which the invoice pre-bills.
+	PeriodStart int64 `json:"period_start"`
+	// Whether to cancel or preserve `prebilling` if the subscription is updated during the prebilled period.
+	UpdateBehavior SubscriptionPrebillingUpdateBehavior `json:"update_behavior"`
+}
+
 // The account (if any) the subscription's payments will be attributed to for tax reporting, and where funds from each payment will be transferred to for each of the subscription's invoices.
 type SubscriptionTransferData struct {
-	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the destination account. By default, the entire amount is transferred to the destination.
+	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice total that will be transferred to the destination account. By default, the entire amount is transferred to the destination.
 	AmountPercent float64 `json:"amount_percent"`
 	// The account where funds from the payment will be transferred to upon payment success.
 	Destination *Account `json:"destination"`
@@ -762,7 +987,7 @@ type Subscription struct {
 	APIResource
 	// ID of the Connect Application that created the subscription.
 	Application *Application `json:"application"`
-	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the application owner's Stripe account.
+	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice total that will be transferred to the application owner's Stripe account.
 	ApplicationFeePercent float64                   `json:"application_fee_percent"`
 	AutomaticTax          *SubscriptionAutomaticTax `json:"automatic_tax"`
 	// Determines the date of the first full invoice, and, for plans with `month` or `year` intervals, the day of the month for subsequent invoices. The timestamp is in UTC format.
@@ -801,6 +1026,8 @@ type Subscription struct {
 	Description string `json:"description"`
 	// Describes the current discount applied to this subscription, if there is one. When billing, a discount applied to a subscription overrides a discount applied on a customer-wide basis.
 	Discount *Discount `json:"discount"`
+	// The discounts applied to the subscription. Subscription item discounts are applied before subscription discounts. Use `expand[]=discounts` to expand each discount.
+	Discounts []*Discount `json:"discounts"`
 	// If the subscription has ended, the date the subscription ended.
 	EndedAt int64 `json:"ended_at"`
 	// Unique identifier for the object.
@@ -829,6 +1056,8 @@ type Subscription struct {
 	PendingSetupIntent *SetupIntent `json:"pending_setup_intent"`
 	// If specified, [pending updates](https://stripe.com/docs/billing/subscriptions/pending-updates) that will be applied to the subscription once the `latest_invoice` has been paid.
 	PendingUpdate *SubscriptionPendingUpdate `json:"pending_update"`
+	// Time period and invoice for a Subscription billed in advance.
+	Prebilling *SubscriptionPrebilling `json:"prebilling"`
 	// The schedule attached to the subscription
 	Schedule *SubscriptionSchedule `json:"schedule"`
 	// Date when the subscription was first created. The date might differ from the `created` date due to backdating.
@@ -839,7 +1068,7 @@ type Subscription struct {
 	//
 	// A subscription that is currently in a trial period is `trialing` and moves to `active` when the trial period is over.
 	//
-	// If subscription `collection_method=charge_automatically` it becomes `past_due` when payment to renew it fails and `canceled` or `unpaid` (depending on your subscriptions settings) when Stripe has exhausted all payment retry attempts.
+	// If subscription `collection_method=charge_automatically`, it becomes `past_due` when payment is required but cannot be paid (due to failed payment or awaiting additional user actions). Once Stripe has exhausted all payment retry attempts, the subscription will become `canceled` or `unpaid` (depending on your subscriptions settings).
 	//
 	// If subscription `collection_method=send_invoice` it becomes `past_due` when its invoice is not paid by the due date, and `canceled` or `unpaid` if it is still not paid by an additional deadline after that. Note that when a subscription has a status of `unpaid`, no subsequent invoices will be attempted (invoices will be created, but then immediately automatically closed). After receiving updated payment information from a customer, you may choose to reopen and pay their closed invoices.
 	Status SubscriptionStatus `json:"status"`

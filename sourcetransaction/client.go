@@ -4,15 +4,15 @@
 //
 //
 
-// Package sourcetransaction provides the TODO APIs
+// Package sourcetransaction provides the sourcetransaction related APIs
 package sourcetransaction
 
 import (
 	"fmt"
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v74"
-	"github.com/stripe/stripe-go/v74/form"
+	stripe "github.com/stripe/stripe-go/v76"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
 // Client is used to invoke /sources/:source_id/transactions APIs.

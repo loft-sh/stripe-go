@@ -55,6 +55,14 @@ const (
 	TreasuryReceivedDebitNetworkStripe TreasuryReceivedDebitNetwork = "stripe"
 )
 
+// The type of flow that originated the ReceivedDebit.
+type TreasuryReceivedDebitNetworkDetailsType string
+
+// List of values that TreasuryReceivedDebitNetworkDetailsType can take
+const (
+	TreasuryReceivedDebitNetworkDetailsTypeACH TreasuryReceivedDebitNetworkDetailsType = "ach"
+)
+
 // Set if a ReceivedDebit can't be reversed.
 type TreasuryReceivedDebitReversalDetailsRestrictedReason string
 
@@ -79,16 +87,31 @@ const (
 // Returns a list of ReceivedDebits.
 type TreasuryReceivedDebitListParams struct {
 	ListParams `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The FinancialAccount that funds were pulled from.
 	FinancialAccount *string `form:"financial_account"`
 	// Only return ReceivedDebits that have the given status: `succeeded` or `failed`.
 	Status *string `form:"status"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *TreasuryReceivedDebitListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 // Retrieves the details of an existing ReceivedDebit by passing the unique ReceivedDebit ID from the ReceivedDebit list
 type TreasuryReceivedDebitParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 }
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryReceivedDebitParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 type TreasuryReceivedDebitInitiatingPaymentMethodDetailsBillingDetails struct {
 	Address *Address `json:"address"`
 	// Email address.
@@ -130,6 +153,22 @@ type TreasuryReceivedDebitLinkedFlows struct {
 	IssuingAuthorization string `json:"issuing_authorization"`
 	// Set if the ReceivedDebit is also viewable as an [Issuing Dispute](https://stripe.com/docs/api#issuing_disputes) object.
 	IssuingTransaction string `json:"issuing_transaction"`
+	// The ReceivedCredit that Capital withheld from
+	ReceivedCreditCapitalWithholding string `json:"received_credit_capital_withholding"`
+}
+
+// Details about an ACH transaction.
+type TreasuryReceivedDebitNetworkDetailsACH struct {
+	// ACH Addenda record
+	Addenda string `json:"addenda"`
+}
+
+// Details specific to the money movement rails.
+type TreasuryReceivedDebitNetworkDetails struct {
+	// Details about an ACH transaction.
+	ACH *TreasuryReceivedDebitNetworkDetailsACH `json:"ach"`
+	// The type of flow that originated the ReceivedDebit.
+	Type TreasuryReceivedDebitNetworkDetailsType `json:"type"`
 }
 
 // Details describing when a ReceivedDebit might be reversed.
@@ -165,6 +204,8 @@ type TreasuryReceivedDebit struct {
 	Livemode bool `json:"livemode"`
 	// The network used for the ReceivedDebit.
 	Network TreasuryReceivedDebitNetwork `json:"network"`
+	// Details specific to the money movement rails.
+	NetworkDetails *TreasuryReceivedDebitNetworkDetails `json:"network_details"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
 	// Details describing when a ReceivedDebit might be reversed.

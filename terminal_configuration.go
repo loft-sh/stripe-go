@@ -12,6 +12,12 @@ type TerminalConfigurationBBPOSWisePOSEParams struct {
 	Splashscreen *string `form:"splashscreen"`
 }
 
+// Configurations for collecting transactions offline.
+type TerminalConfigurationOfflineParams struct {
+	// Determines whether to allow transactions to be collected while reader is offline. Defaults to false.
+	Enabled *bool `form:"enabled"`
+}
+
 // Tipping configuration for AUD
 type TerminalConfigurationTippingAUDParams struct {
 	// Fixed amounts displayed when collecting a tip
@@ -195,21 +201,42 @@ type TerminalConfigurationParams struct {
 	Params `form:"*"`
 	// An object containing device type specific settings for BBPOS WisePOS E readers
 	BBPOSWisePOSE *TerminalConfigurationBBPOSWisePOSEParams `form:"bbpos_wisepos_e"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Configurations for collecting transactions offline.
+	Offline *TerminalConfigurationOfflineParams `form:"offline"`
 	// Tipping configurations for readers supporting on-reader tips
 	Tipping *TerminalConfigurationTippingParams `form:"tipping"`
 	// An object containing device type specific settings for Verifone P400 readers
 	VerifoneP400 *TerminalConfigurationVerifoneP400Params `form:"verifone_p400"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *TerminalConfigurationParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 // Returns a list of Configuration objects.
 type TerminalConfigurationListParams struct {
 	ListParams `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// if present, only return the account default or non-default configurations.
 	IsAccountDefault *bool `form:"is_account_default"`
 }
+
+// AddExpand appends a new field to expand.
+func (p *TerminalConfigurationListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 type TerminalConfigurationBBPOSWisePOSE struct {
 	// A File ID representing an image you would like displayed on the reader.
 	Splashscreen *File `json:"splashscreen"`
+}
+type TerminalConfigurationOffline struct {
+	// Determines whether to allow transactions to be collected while reader is offline. Defaults to false.
+	Enabled bool `json:"enabled"`
 }
 type TerminalConfigurationTippingAUD struct {
 	// Fixed amounts displayed when collecting a tip
@@ -357,6 +384,7 @@ type TerminalConfiguration struct {
 	Livemode bool `json:"livemode"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object       string                             `json:"object"`
+	Offline      *TerminalConfigurationOffline      `json:"offline"`
 	Tipping      *TerminalConfigurationTipping      `json:"tipping"`
 	VerifoneP400 *TerminalConfigurationVerifoneP400 `json:"verifone_p400"`
 }

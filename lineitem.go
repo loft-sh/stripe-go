@@ -11,24 +11,21 @@ type LineItemTaxTaxabilityReason string
 
 // List of values that LineItemTaxTaxabilityReason can take
 const (
-	LineItemTaxTaxabilityReasonCustomerExempt          LineItemTaxTaxabilityReason = "customer_exempt"
-	LineItemTaxTaxabilityReasonExcludedTerritory       LineItemTaxTaxabilityReason = "excluded_territory"
-	LineItemTaxTaxabilityReasonJurisdictionUnsupported LineItemTaxTaxabilityReason = "jurisdiction_unsupported"
-	LineItemTaxTaxabilityReasonNotCollecting           LineItemTaxTaxabilityReason = "not_collecting"
-	LineItemTaxTaxabilityReasonNotSubjectToTax         LineItemTaxTaxabilityReason = "not_subject_to_tax"
-	LineItemTaxTaxabilityReasonNotSupported            LineItemTaxTaxabilityReason = "not_supported"
-	LineItemTaxTaxabilityReasonPortionProductExempt    LineItemTaxTaxabilityReason = "portion_product_exempt"
-	LineItemTaxTaxabilityReasonPortionReducedRated     LineItemTaxTaxabilityReason = "portion_reduced_rated"
-	LineItemTaxTaxabilityReasonPortionStandardRated    LineItemTaxTaxabilityReason = "portion_standard_rated"
-	LineItemTaxTaxabilityReasonProductExempt           LineItemTaxTaxabilityReason = "product_exempt"
-	LineItemTaxTaxabilityReasonProductExemptHoliday    LineItemTaxTaxabilityReason = "product_exempt_holiday"
-	LineItemTaxTaxabilityReasonProportionallyRated     LineItemTaxTaxabilityReason = "proportionally_rated"
-	LineItemTaxTaxabilityReasonReducedRated            LineItemTaxTaxabilityReason = "reduced_rated"
-	LineItemTaxTaxabilityReasonReverseCharge           LineItemTaxTaxabilityReason = "reverse_charge"
-	LineItemTaxTaxabilityReasonStandardRated           LineItemTaxTaxabilityReason = "standard_rated"
-	LineItemTaxTaxabilityReasonTaxableBasisReduced     LineItemTaxTaxabilityReason = "taxable_basis_reduced"
-	LineItemTaxTaxabilityReasonVATExempt               LineItemTaxTaxabilityReason = "vat_exempt"
-	LineItemTaxTaxabilityReasonZeroRated               LineItemTaxTaxabilityReason = "zero_rated"
+	LineItemTaxTaxabilityReasonCustomerExempt       LineItemTaxTaxabilityReason = "customer_exempt"
+	LineItemTaxTaxabilityReasonNotCollecting        LineItemTaxTaxabilityReason = "not_collecting"
+	LineItemTaxTaxabilityReasonNotSubjectToTax      LineItemTaxTaxabilityReason = "not_subject_to_tax"
+	LineItemTaxTaxabilityReasonNotSupported         LineItemTaxTaxabilityReason = "not_supported"
+	LineItemTaxTaxabilityReasonPortionProductExempt LineItemTaxTaxabilityReason = "portion_product_exempt"
+	LineItemTaxTaxabilityReasonPortionReducedRated  LineItemTaxTaxabilityReason = "portion_reduced_rated"
+	LineItemTaxTaxabilityReasonPortionStandardRated LineItemTaxTaxabilityReason = "portion_standard_rated"
+	LineItemTaxTaxabilityReasonProductExempt        LineItemTaxTaxabilityReason = "product_exempt"
+	LineItemTaxTaxabilityReasonProductExemptHoliday LineItemTaxTaxabilityReason = "product_exempt_holiday"
+	LineItemTaxTaxabilityReasonProportionallyRated  LineItemTaxTaxabilityReason = "proportionally_rated"
+	LineItemTaxTaxabilityReasonReducedRated         LineItemTaxTaxabilityReason = "reduced_rated"
+	LineItemTaxTaxabilityReasonReverseCharge        LineItemTaxTaxabilityReason = "reverse_charge"
+	LineItemTaxTaxabilityReasonStandardRated        LineItemTaxTaxabilityReason = "standard_rated"
+	LineItemTaxTaxabilityReasonTaxableBasisReduced  LineItemTaxTaxabilityReason = "taxable_basis_reduced"
+	LineItemTaxTaxabilityReasonZeroRated            LineItemTaxTaxabilityReason = "zero_rated"
 )
 
 // The discounts applied to the line item.
@@ -52,7 +49,7 @@ type LineItemTax struct {
 	Rate *TaxRate `json:"rate"`
 	// The reasoning behind this tax, for example, if the product is tax exempt. The possible values for this field may be extended as new tax rules are supported.
 	TaxabilityReason LineItemTaxTaxabilityReason `json:"taxability_reason"`
-	// The amount on which tax is calculated, in %s.
+	// The amount on which tax is calculated, in cents (or local equivalent).
 	TaxableAmount int64 `json:"taxable_amount"`
 }
 
@@ -78,6 +75,10 @@ type LineItem struct {
 	Object string `json:"object"`
 	// The price used to generate the line item.
 	Price *Price `json:"price"`
+	// The ID of the product for this line item.
+	//
+	// This will always be the same as `price.product`.
+	Product *Product `json:"product"`
 	// The quantity of products being purchased.
 	Quantity int64 `json:"quantity"`
 	// The taxes applied to the line item.

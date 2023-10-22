@@ -8,7 +8,7 @@ package stripe
 
 import (
 	"encoding/json"
-	"github.com/stripe/stripe-go/v74/form"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
 // The business type.
@@ -42,6 +42,7 @@ const (
 	AccountCompanyStructureGovernmentInstrumentality          AccountCompanyStructure = "government_instrumentality"
 	AccountCompanyStructureGovernmentalUnit                   AccountCompanyStructure = "governmental_unit"
 	AccountCompanyStructureIncorporatedNonProfit              AccountCompanyStructure = "incorporated_non_profit"
+	AccountCompanyStructureIncorporatedPartnership            AccountCompanyStructure = "incorporated_partnership"
 	AccountCompanyStructureLimitedLiabilityPartnership        AccountCompanyStructure = "limited_liability_partnership"
 	AccountCompanyStructureLLC                                AccountCompanyStructure = "llc"
 	AccountCompanyStructureMultiMemberLLC                     AccountCompanyStructure = "multi_member_llc"
@@ -57,6 +58,7 @@ const (
 	AccountCompanyStructureTaxExemptGovernmentInstrumentality AccountCompanyStructure = "tax_exempt_government_instrumentality"
 	AccountCompanyStructureUnincorporatedAssociation          AccountCompanyStructure = "unincorporated_association"
 	AccountCompanyStructureUnincorporatedNonProfit            AccountCompanyStructure = "unincorporated_non_profit"
+	AccountCompanyStructureUnincorporatedPartnership          AccountCompanyStructure = "unincorporated_partnership"
 )
 
 // One of `document_corrupt`, `document_expired`, `document_failed_copy`, `document_failed_greyscale`, `document_failed_other`, `document_failed_test_mode`, `document_fraudulent`, `document_incomplete`, `document_invalid`, `document_manipulated`, `document_not_readable`, `document_not_uploaded`, `document_type_not_supported`, or `document_too_large`. A machine-readable code specifying the verification state for this document.
@@ -78,6 +80,16 @@ const (
 	AccountCompanyVerificationDocumentDetailsCodeDocumentNotUploaded      AccountCompanyVerificationDocumentDetailsCode = "document_not_uploaded"
 	AccountCompanyVerificationDocumentDetailsCodeDocumentTooLarge         AccountCompanyVerificationDocumentDetailsCode = "document_too_large"
 	AccountCompanyVerificationDocumentDetailsCodeDocumentTypeNotSupported AccountCompanyVerificationDocumentDetailsCode = "document_type_not_supported"
+)
+
+// Whether this account has access to the full Stripe dashboard (`full`), to the Express dashboard (`express`), or to no dashboard (`none`).
+type AccountControllerDashboardType string
+
+// List of values that AccountControllerDashboardType can take
+const (
+	AccountControllerDashboardTypeExpress AccountControllerDashboardType = "express"
+	AccountControllerDashboardTypeFull    AccountControllerDashboardType = "full"
+	AccountControllerDashboardTypeNone    AccountControllerDashboardType = "none"
 )
 
 // The controller type. Can be `application`, if a Connect application controls the account, or `account`, if the account controls itself.
@@ -155,6 +167,8 @@ type AccountParams struct {
 	Capabilities *AccountCapabilitiesParams `form:"capabilities"`
 	// Information about the company or business. This field is available for any `business_type`.
 	Company *AccountCompanyParams `form:"company"`
+	// The configuration of the account when `type` is not provided.
+	Controller *AccountControllerParams `form:"controller"`
 	// The country in which the account holder resides, or in which the business is legally established. This should be an ISO 3166-1 alpha-2 country code. For example, if you are in the United States and the business for which you're creating an account is legally represented in Canada, you would use `CA` as the country for the account being created. Available countries include [Stripe's global markets](https://stripe.com/global) as well as countries where [cross-border payouts](https://stripe.com/docs/connect/cross-border-payouts) are supported.
 	Country *string `form:"country"`
 	// Three-letter ISO currency code representing the default currency for the account. This must be a currency that [Stripe supports in the account's country](https://stripe.com/docs/payouts).
@@ -163,12 +177,16 @@ type AccountParams struct {
 	Documents *AccountDocumentsParams `form:"documents"`
 	// The email address of the account holder. This is only to make the account easier to identify to you. Stripe only emails Custom accounts with your consent.
 	Email *string `form:"email"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// A card or bank account to attach to the account for receiving [payouts](https://stripe.com/docs/connect/bank-debit-card-payouts) (you won't be able to use it for top-ups). You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/js), or a dictionary, as documented in the `external_account` parameter for [bank account](https://stripe.com/docs/api#account_create_bank_account) creation.
 	//
 	// By default, providing an external account sets it as the new default external account for its currency, and deletes the old default if one exists. To add additional external accounts without replacing the existing default for the currency, use the [bank account](https://stripe.com/docs/api#account_create_bank_account) or [card creation](https://stripe.com/docs/api#account_create_card) APIs.
 	ExternalAccount *AccountExternalAccountParams `form:"external_account"`
 	// Information about the person represented by the account. This field is null unless `business_type` is set to `individual`.
 	Individual *PersonParams `form:"individual"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// Options for customizing how the account functions within Stripe.
 	Settings *AccountSettingsParams `form:"settings"`
 	// Details on the account's acceptance of the [Stripe Services Agreement](https://stripe.com/docs/connect/updating-accounts#tos-acceptance).
@@ -177,10 +195,34 @@ type AccountParams struct {
 	Type *string `form:"type"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *AccountParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *AccountParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// An estimate of the monthly revenue of the business. Only accepted for accounts in Brazil and India.
+type AccountBusinessProfileMonthlyEstimatedRevenueParams struct {
+	// A non-negative integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
+	Amount *int64 `form:"amount"`
+	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+	Currency *string `form:"currency"`
+}
+
 // Business information about the account.
 type AccountBusinessProfileParams struct {
 	// [The merchant category code for the account](https://stripe.com/docs/connect/setting-mcc). MCCs are used to classify businesses based on the goods or services they provide.
 	MCC *string `form:"mcc"`
+	// An estimate of the monthly revenue of the business. Only accepted for accounts in Brazil and India.
+	MonthlyEstimatedRevenue *AccountBusinessProfileMonthlyEstimatedRevenueParams `form:"monthly_estimated_revenue"`
 	// The customer-facing business name.
 	Name *string `form:"name"`
 	// Internal-only description of the product sold by, or service provided by, the business. Used by Stripe for risk and underwriting purposes.
@@ -359,6 +401,12 @@ type AccountCapabilitiesPayNowPaymentsParams struct {
 	Requested *bool `form:"requested"`
 }
 
+// The paypal_payments capability.
+type AccountCapabilitiesPaypalPaymentsParams struct {
+	// Passing true requests the capability for the account, if it is not already requested. A requested capability may not immediately become active. Any requirements to activate the capability are returned in the `requirements` arrays.
+	Requested *bool `form:"requested"`
+}
+
 // The promptpay_payments capability.
 type AccountCapabilitiesPromptPayPaymentsParams struct {
 	// Passing true requests the capability for the account, if it is not already requested. A requested capability may not immediately become active. Any requirements to activate the capability are returned in the `requirements` arrays.
@@ -469,6 +517,8 @@ type AccountCapabilitiesParams struct {
 	P24Payments *AccountCapabilitiesP24PaymentsParams `form:"p24_payments"`
 	// The paynow_payments capability.
 	PayNowPayments *AccountCapabilitiesPayNowPaymentsParams `form:"paynow_payments"`
+	// The paypal_payments capability.
+	PaypalPayments *AccountCapabilitiesPaypalPaymentsParams `form:"paypal_payments"`
 	// The promptpay_payments capability.
 	PromptPayPayments *AccountCapabilitiesPromptPayPaymentsParams `form:"promptpay_payments"`
 	// The sepa_debit_payments capability.
@@ -713,7 +763,7 @@ type AccountSettingsPaymentsParams struct {
 
 // Details on when funds from charges are available, and when they are paid out to an external account. For details, see our [Setting Bank and Debit Card Payouts](https://stripe.com/docs/connect/bank-transfers#payout-information) documentation.
 type AccountSettingsPayoutsScheduleParams struct {
-	// The number of days charge funds are held before being paid out. May also be set to `minimum`, representing the lowest available value for the account country. Default is `minimum`. The `delay_days` parameter does not apply when the `interval` is `manual`. [Learn more about controlling payout delay days](https://stripe.com/docs/connect/manage-payout-schedule).
+	// The number of days charge funds are held before being paid out. May also be set to `minimum`, representing the lowest available value for the account country. Default is `minimum`. The `delay_days` parameter remains at the last configured value if `interval` is `manual`. [Learn more about controlling payout delay days](https://stripe.com/docs/connect/manage-payout-schedule).
 	DelayDays        *int64 `form:"delay_days"`
 	DelayDaysMinimum *bool  `form:"-"` // See custom AppendTo
 	// How frequently available funds are paid out. One of: `daily`, `manual`, `weekly`, or `monthly`. Default is `daily`.
@@ -725,8 +775,8 @@ type AccountSettingsPayoutsScheduleParams struct {
 }
 
 // AppendTo implements custom encoding logic for AccountSettingsPayoutsScheduleParams.
-func (a *AccountSettingsPayoutsScheduleParams) AppendTo(body *form.Values, keyParts []string) {
-	if BoolValue(a.DelayDaysMinimum) {
+func (p *AccountSettingsPayoutsScheduleParams) AppendTo(body *form.Values, keyParts []string) {
+	if BoolValue(p.DelayDaysMinimum) {
 		body.Add(form.FormatKey(append(keyParts, "delay_days")), "minimum")
 	}
 }
@@ -739,6 +789,12 @@ type AccountSettingsPayoutsParams struct {
 	Schedule *AccountSettingsPayoutsScheduleParams `form:"schedule"`
 	// The text that appears on the bank account statement for payouts. If not set, this defaults to the platform's bank descriptor as set in the Dashboard.
 	StatementDescriptor *string `form:"statement_descriptor"`
+}
+
+// Settings specific to the account's tax forms.
+type AccountSettingsTaxFormsParams struct {
+	// Whether the account opted out of receiving their tax forms by postal delivery.
+	ConsentedToPaperlessDelivery *bool `form:"consented_to_paperless_delivery"`
 }
 
 // Details on the account's acceptance of the Stripe Treasury Services Agreement.
@@ -773,6 +829,8 @@ type AccountSettingsParams struct {
 	Payments *AccountSettingsPaymentsParams `form:"payments"`
 	// Settings specific to the account's payouts.
 	Payouts *AccountSettingsPayoutsParams `form:"payouts"`
+	// Settings specific to the account's tax forms.
+	TaxForms *AccountSettingsTaxFormsParams `form:"tax_forms"`
 	// Settings specific to the account's Treasury FinancialAccounts.
 	Treasury *AccountSettingsTreasuryParams `form:"treasury"`
 }
@@ -794,6 +852,37 @@ type AccountListParams struct {
 	ListParams   `form:"*"`
 	Created      *int64            `form:"created"`
 	CreatedRange *RangeQueryParams `form:"created"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *AccountListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// The documentation for the application hash.
+type AccountControllerApplicationParams struct {
+	// Whether the controller is liable for losses on this account. For details, see [Understanding Connect Account Balances](https://stripe.com/docs/connect/account-balances).
+	LossLiable *bool `form:"loss_liable"`
+	// Whether the controller owns onboarding for this account.
+	OnboardingOwner *bool `form:"onboarding_owner"`
+	// Whether the controller has pricing controls for this account.
+	PricingControls *bool `form:"pricing_controls"`
+}
+
+// Properties of the account's dashboard.
+type AccountControllerDashboardParams struct {
+	// Whether this account should have access to the full Stripe dashboard (`full`) or no dashboard (`none`).
+	Type *string `form:"type"`
+}
+
+// The configuration of the account when `type` is not provided.
+type AccountControllerParams struct {
+	// The documentation for the application hash.
+	Application *AccountControllerApplicationParams `form:"application"`
+	// Properties of the account's dashboard.
+	Dashboard *AccountControllerDashboardParams `form:"dashboard"`
 }
 
 // With [Connect](https://stripe.com/docs/connect), you may flag accounts as suspicious.
@@ -801,6 +890,8 @@ type AccountListParams struct {
 // Test-mode Custom and Express accounts can be rejected at any time. Accounts created using live-mode keys may only be rejected once all balances are zero.
 type AccountRejectParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The reason for rejecting the account. Can be `fraud`, `terms_of_service`, or `other`.
 	Reason *string `form:"reason"`
 }
@@ -830,10 +921,23 @@ func (p *AccountExternalAccountParams) AppendTo(body *form.Values, keyParts []st
 	}
 }
 
+// AddExpand appends a new field to expand.
+func (p *AccountRejectParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+type AccountBusinessProfileMonthlyEstimatedRevenue struct {
+	// A non-negative integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
+	Amount int64 `json:"amount"`
+	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+	Currency Currency `json:"currency"`
+}
+
 // Business information about the account.
 type AccountBusinessProfile struct {
 	// [The merchant category code for the account](https://stripe.com/docs/connect/setting-mcc). MCCs are used to classify businesses based on the goods or services they provide.
-	MCC string `json:"mcc"`
+	MCC                     string                                         `json:"mcc"`
+	MonthlyEstimatedRevenue *AccountBusinessProfileMonthlyEstimatedRevenue `json:"monthly_estimated_revenue"`
 	// The customer-facing business name.
 	Name string `json:"name"`
 	// Internal-only description of the product sold or service provided by the business. It's used by Stripe for risk and underwriting purposes.
@@ -904,6 +1008,8 @@ type AccountCapabilities struct {
 	P24Payments AccountCapabilityStatus `json:"p24_payments"`
 	// The status of the paynow payments capability of the account, or whether the account can directly process paynow charges.
 	PayNowPayments AccountCapabilityStatus `json:"paynow_payments"`
+	// The status of the PayPal payments capability of the account, or whether the account can directly process PayPal charges.
+	PaypalPayments AccountCapabilityStatus `json:"paypal_payments"`
 	// The status of the promptpay payments capability of the account, or whether the account can directly process promptpay charges.
 	PromptPayPayments AccountCapabilityStatus `json:"promptpay_payments"`
 	// The status of the SEPA Direct Debits payments capability of the account, or whether the account can directly process SEPA Direct Debits charges.
@@ -1021,7 +1127,21 @@ type AccountCompany struct {
 	// Information on the verification state of the company.
 	Verification *AccountCompanyVerification `json:"verification"`
 }
+type AccountControllerApplication struct {
+	// `true` if the Connect application is responsible for negative balances and should manage credit and fraud risk on the account.
+	LossLiable bool `json:"loss_liable"`
+	// `true` if the Connect application is responsible for onboarding the account.
+	OnboardingOwner bool `json:"onboarding_owner"`
+	// `true` if the Connect application is responsible for paying Stripe fees on pricing-control eligible products.
+	PricingControls bool `json:"pricing_controls"`
+}
+type AccountControllerDashboard struct {
+	// Whether this account has access to the full Stripe dashboard (`full`), to the Express dashboard (`express`), or to no dashboard (`none`).
+	Type AccountControllerDashboardType `json:"type"`
+}
 type AccountController struct {
+	Application *AccountControllerApplication `json:"application"`
+	Dashboard   *AccountControllerDashboard   `json:"dashboard"`
 	// `true` if the Connect application retrieving the resource controls the account and can therefore exercise [platform controls](https://stripe.com/docs/connect/platform-controls-for-standard-accounts). Otherwise, this field is null.
 	IsController bool `json:"is_controller"`
 	// The controller type. Can be `application`, if a Connect application controls the account, or `account`, if the account controls itself.
@@ -1178,6 +1298,10 @@ type AccountSettingsSEPADebitPayments struct {
 	// SEPA creditor identifier that identifies the company making the payment.
 	CreditorID string `json:"creditor_id"`
 }
+type AccountSettingsTaxForms struct {
+	// Whether the account opted out of receiving their tax forms by postal delivery.
+	ConsentedToPaperlessDelivery bool `json:"consented_to_paperless_delivery"`
+}
 type AccountSettingsTreasuryTOSAcceptance struct {
 	// The Unix timestamp marking when the account representative accepted the service agreement.
 	Date int64 `json:"date"`
@@ -1200,6 +1324,7 @@ type AccountSettings struct {
 	Payments          *AccountSettingsPayments          `json:"payments"`
 	Payouts           *AccountSettingsPayouts           `json:"payouts"`
 	SEPADebitPayments *AccountSettingsSEPADebitPayments `json:"sepa_debit_payments"`
+	TaxForms          *AccountSettingsTaxForms          `json:"tax_forms"`
 	Treasury          *AccountSettingsTreasury          `json:"treasury"`
 }
 type AccountTOSAcceptance struct {
@@ -1251,9 +1376,9 @@ type Account struct {
 	// This is an object representing a person associated with a Stripe account.
 	//
 	// A platform cannot access a Standard or Express account's persons after the account starts onboarding, such as after generating an account link for the account.
-	// See the [Standard onboarding](https://stripe.com/docs/connect/standard-accounts) or [Express onboarding documentation](https://stripe.com/docs/connect/express-accounts) for information about platform pre-filling and account onboarding steps.
+	// See the [Standard onboarding](https://stripe.com/docs/connect/standard-accounts) or [Express onboarding documentation](https://stripe.com/docs/connect/express-accounts) for information about platform prefilling and account onboarding steps.
 	//
-	// Related guide: [Handling identity verification with the API](https://stripe.com/docs/connect/identity-verification-api#person-information)
+	// Related guide: [Handling identity verification with the API](https://stripe.com/docs/connect/handling-api-verification#person-information)
 	Individual *Person `json:"individual"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
 	Metadata map[string]string `json:"metadata"`

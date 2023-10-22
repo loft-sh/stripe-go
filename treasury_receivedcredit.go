@@ -66,6 +66,14 @@ const (
 	TreasuryReceivedCreditNetworkUSDomesticWire TreasuryReceivedCreditNetwork = "us_domestic_wire"
 )
 
+// The type of flow that originated the ReceivedCredit.
+type TreasuryReceivedCreditNetworkDetailsType string
+
+// List of values that TreasuryReceivedCreditNetworkDetailsType can take
+const (
+	TreasuryReceivedCreditNetworkDetailsTypeACH TreasuryReceivedCreditNetworkDetailsType = "ach"
+)
+
 // Set if a ReceivedCredit cannot be reversed.
 type TreasuryReceivedCreditReversalDetailsRestrictedReason string
 
@@ -96,6 +104,8 @@ type TreasuryReceivedCreditListLinkedFlowsParams struct {
 // Returns a list of ReceivedCredits.
 type TreasuryReceivedCreditListParams struct {
 	ListParams `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The FinancialAccount that received the funds.
 	FinancialAccount *string `form:"financial_account"`
 	// Only return ReceivedCredits described by the flow.
@@ -104,10 +114,23 @@ type TreasuryReceivedCreditListParams struct {
 	Status *string `form:"status"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *TreasuryReceivedCreditListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 // Retrieves the details of an existing ReceivedCredit by passing the unique ReceivedCredit ID from the ReceivedCredit list.
 type TreasuryReceivedCreditParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 }
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryReceivedCreditParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 type TreasuryReceivedCreditInitiatingPaymentMethodDetailsBillingDetails struct {
 	Address *Address `json:"address"`
 	// Email address.
@@ -152,7 +175,7 @@ type TreasuryReceivedCreditLinkedFlowsSourceFlowDetails struct {
 	// A `Payout` object is created when you receive funds from Stripe, or when you
 	// initiate a payout to either a bank account or debit card of a [connected
 	// Stripe account](https://stripe.com/docs/connect/bank-debit-card-payouts). You can retrieve individual payouts,
-	// as well as list all payouts. Payouts are made on [varying
+	// and list all payouts. Payouts are made on [varying
 	// schedules](https://stripe.com/docs/connect/manage-payout-schedule), depending on your country and
 	// industry.
 	//
@@ -174,6 +197,20 @@ type TreasuryReceivedCreditLinkedFlows struct {
 	SourceFlowDetails *TreasuryReceivedCreditLinkedFlowsSourceFlowDetails `json:"source_flow_details"`
 	// The type of flow that originated the ReceivedCredit (for example, `outbound_payment`).
 	SourceFlowType string `json:"source_flow_type"`
+}
+
+// Details about an ACH transaction.
+type TreasuryReceivedCreditNetworkDetailsACH struct {
+	// ACH Addenda record
+	Addenda string `json:"addenda"`
+}
+
+// Details specific to the money movement rails.
+type TreasuryReceivedCreditNetworkDetails struct {
+	// Details about an ACH transaction.
+	ACH *TreasuryReceivedCreditNetworkDetailsACH `json:"ach"`
+	// The type of flow that originated the ReceivedCredit.
+	Type TreasuryReceivedCreditNetworkDetailsType `json:"type"`
 }
 
 // Details describing when a ReceivedCredit may be reversed.
@@ -209,6 +246,8 @@ type TreasuryReceivedCredit struct {
 	Livemode bool `json:"livemode"`
 	// The rails used to send the funds.
 	Network TreasuryReceivedCreditNetwork `json:"network"`
+	// Details specific to the money movement rails.
+	NetworkDetails *TreasuryReceivedCreditNetworkDetails `json:"network_details"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
 	// Details describing when a ReceivedCredit may be reversed.

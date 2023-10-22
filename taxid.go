@@ -8,15 +8,18 @@ package stripe
 
 import "encoding/json"
 
-// Type of the tax ID, one of `ae_trn`, `au_abn`, `au_arn`, `bg_uic`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `ph_tin`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, or `za_vat`. Note that some legacy tax IDs have type `unknown`
+// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `ar_cuit`, `au_abn`, `au_arn`, `bg_uic`, `bo_tin`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sv_nit`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, `uy_ruc`, `ve_rif`, `vn_tin`, or `za_vat`. Note that some legacy tax IDs have type `unknown`
 type TaxIDType string
 
 // List of values that TaxIDType can take
 const (
+	TaxIDTypeADNRT    TaxIDType = "ad_nrt"
 	TaxIDTypeAETRN    TaxIDType = "ae_trn"
+	TaxIDTypeARCUIT   TaxIDType = "ar_cuit"
 	TaxIDTypeAUABN    TaxIDType = "au_abn"
 	TaxIDTypeAUARN    TaxIDType = "au_arn"
 	TaxIDTypeBGUIC    TaxIDType = "bg_uic"
+	TaxIDTypeBOTIN    TaxIDType = "bo_tin"
 	TaxIDTypeBRCNPJ   TaxIDType = "br_cnpj"
 	TaxIDTypeBRCPF    TaxIDType = "br_cpf"
 	TaxIDTypeCABN     TaxIDType = "ca_bn"
@@ -27,6 +30,11 @@ const (
 	TaxIDTypeCAQST    TaxIDType = "ca_qst"
 	TaxIDTypeCHVAT    TaxIDType = "ch_vat"
 	TaxIDTypeCLTIN    TaxIDType = "cl_tin"
+	TaxIDTypeCNTIN    TaxIDType = "cn_tin"
+	TaxIDTypeCONIT    TaxIDType = "co_nit"
+	TaxIDTypeCRTIN    TaxIDType = "cr_tin"
+	TaxIDTypeDORCN    TaxIDType = "do_rcn"
+	TaxIDTypeECRUC    TaxIDType = "ec_ruc"
 	TaxIDTypeEGTIN    TaxIDType = "eg_tin"
 	TaxIDTypeESCIF    TaxIDType = "es_cif"
 	TaxIDTypeEUOSSVAT TaxIDType = "eu_oss_vat"
@@ -51,19 +59,26 @@ const (
 	TaxIDTypeMYSST    TaxIDType = "my_sst"
 	TaxIDTypeNOVAT    TaxIDType = "no_vat"
 	TaxIDTypeNZGST    TaxIDType = "nz_gst"
+	TaxIDTypePERUC    TaxIDType = "pe_ruc"
 	TaxIDTypePHTIN    TaxIDType = "ph_tin"
+	TaxIDTypeROTIN    TaxIDType = "ro_tin"
+	TaxIDTypeRSPIB    TaxIDType = "rs_pib"
 	TaxIDTypeRUINN    TaxIDType = "ru_inn"
 	TaxIDTypeRUKPP    TaxIDType = "ru_kpp"
 	TaxIDTypeSAVAT    TaxIDType = "sa_vat"
 	TaxIDTypeSGGST    TaxIDType = "sg_gst"
 	TaxIDTypeSGUEN    TaxIDType = "sg_uen"
 	TaxIDTypeSITIN    TaxIDType = "si_tin"
+	TaxIDTypeSVNIT    TaxIDType = "sv_nit"
 	TaxIDTypeTHVAT    TaxIDType = "th_vat"
 	TaxIDTypeTRTIN    TaxIDType = "tr_tin"
 	TaxIDTypeTWVAT    TaxIDType = "tw_vat"
 	TaxIDTypeUAVAT    TaxIDType = "ua_vat"
 	TaxIDTypeUnknown  TaxIDType = "unknown"
 	TaxIDTypeUSEIN    TaxIDType = "us_ein"
+	TaxIDTypeUYRUC    TaxIDType = "uy_ruc"
+	TaxIDTypeVERIF    TaxIDType = "ve_rif"
+	TaxIDTypeVNTIN    TaxIDType = "vn_tin"
 	TaxIDTypeZAVAT    TaxIDType = "za_vat"
 )
 
@@ -78,20 +93,34 @@ const (
 	TaxIDVerificationStatusVerified    TaxIDVerificationStatus = "verified"
 )
 
-// Creates a new TaxID object for a customer.
+// Creates a new tax_id object for a customer.
 type TaxIDParams struct {
 	Params   `form:"*"`
 	Customer *string `form:"-"` // Included in URL
-	// Type of the tax ID, one of `ae_trn`, `au_abn`, `au_arn`, `bg_uic`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `ph_tin`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, or `za_vat`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `ar_cuit`, `au_abn`, `au_arn`, `bg_uic`, `bo_tin`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sv_nit`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, `uy_ruc`, `ve_rif`, `vn_tin`, or `za_vat`
 	Type *string `form:"type"`
 	// Value of the tax ID.
 	Value *string `form:"value"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxIDParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Returns a list of tax IDs for a customer.
 type TaxIDListParams struct {
 	ListParams `form:"*"`
 	Customer   *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxIDListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Tax ID verification information.
@@ -104,10 +133,10 @@ type TaxIDVerification struct {
 	VerifiedName string `json:"verified_name"`
 }
 
-// You can add one or multiple tax IDs to a [customer](https://stripe.com/docs/api/customers).
-// A customer's tax IDs are displayed on invoices and credit notes issued for the customer.
+// You can add one or multiple tax IDs to a [customer](https://stripe.com/docs/api/customers) or account.
+// Customer and account tax IDs get displayed on related invoices and credit notes.
 //
-// Related guide: [Customer tax identification numbers](https://stripe.com/docs/billing/taxes/tax-ids)
+// Related guides: [Customer tax identification numbers](https://stripe.com/docs/billing/taxes/tax-ids), [Account tax IDs](https://stripe.com/docs/invoicing/connect#account-tax-ids)
 type TaxID struct {
 	APIResource
 	// Two-letter ISO code representing the country of the tax ID.
@@ -123,7 +152,7 @@ type TaxID struct {
 	Livemode bool `json:"livemode"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
-	// Type of the tax ID, one of `ae_trn`, `au_abn`, `au_arn`, `bg_uic`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `ph_tin`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, or `za_vat`. Note that some legacy tax IDs have type `unknown`
+	// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `ar_cuit`, `au_abn`, `au_arn`, `bg_uic`, `bo_tin`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sv_nit`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, `uy_ruc`, `ve_rif`, `vn_tin`, or `za_vat`. Note that some legacy tax IDs have type `unknown`
 	Type TaxIDType `json:"type"`
 	// Value of the tax ID.
 	Value string `json:"value"`

@@ -15,15 +15,18 @@ const (
 	TaxTransactionCustomerDetailsAddressSourceShipping TaxTransactionCustomerDetailsAddressSource = "shipping"
 )
 
-// The type of the tax ID, one of `eu_vat`, `br_cnpj`, `br_cpf`, `eu_oss_vat`, `gb_vat`, `nz_gst`, `au_abn`, `au_arn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ru_kpp`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `my_sst`, `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, `my_frp`, `il_vat`, `ge_vat`, `ua_vat`, `is_vat`, `bg_uic`, `hu_tin`, `si_tin`, `ke_pin`, `tr_tin`, `eg_tin`, `ph_tin`, or `unknown`
+// The type of the tax ID, one of `ad_nrt`, `ar_cuit`, `eu_vat`, `bo_tin`, `br_cnpj`, `br_cpf`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eu_oss_vat`, `pe_ruc`, `ro_tin`, `rs_pib`, `sv_nit`, `uy_ruc`, `ve_rif`, `vn_tin`, `gb_vat`, `nz_gst`, `au_abn`, `au_arn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ru_kpp`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `my_sst`, `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, `my_frp`, `il_vat`, `ge_vat`, `ua_vat`, `is_vat`, `bg_uic`, `hu_tin`, `si_tin`, `ke_pin`, `tr_tin`, `eg_tin`, `ph_tin`, or `unknown`
 type TaxTransactionCustomerDetailsTaxIDType string
 
 // List of values that TaxTransactionCustomerDetailsTaxIDType can take
 const (
+	TaxTransactionCustomerDetailsTaxIDTypeADNRT    TaxTransactionCustomerDetailsTaxIDType = "ad_nrt"
 	TaxTransactionCustomerDetailsTaxIDTypeAETRN    TaxTransactionCustomerDetailsTaxIDType = "ae_trn"
+	TaxTransactionCustomerDetailsTaxIDTypeARCUIT   TaxTransactionCustomerDetailsTaxIDType = "ar_cuit"
 	TaxTransactionCustomerDetailsTaxIDTypeAUABN    TaxTransactionCustomerDetailsTaxIDType = "au_abn"
 	TaxTransactionCustomerDetailsTaxIDTypeAUARN    TaxTransactionCustomerDetailsTaxIDType = "au_arn"
 	TaxTransactionCustomerDetailsTaxIDTypeBGUIC    TaxTransactionCustomerDetailsTaxIDType = "bg_uic"
+	TaxTransactionCustomerDetailsTaxIDTypeBOTIN    TaxTransactionCustomerDetailsTaxIDType = "bo_tin"
 	TaxTransactionCustomerDetailsTaxIDTypeBRCNPJ   TaxTransactionCustomerDetailsTaxIDType = "br_cnpj"
 	TaxTransactionCustomerDetailsTaxIDTypeBRCPF    TaxTransactionCustomerDetailsTaxIDType = "br_cpf"
 	TaxTransactionCustomerDetailsTaxIDTypeCABN     TaxTransactionCustomerDetailsTaxIDType = "ca_bn"
@@ -34,6 +37,11 @@ const (
 	TaxTransactionCustomerDetailsTaxIDTypeCAQST    TaxTransactionCustomerDetailsTaxIDType = "ca_qst"
 	TaxTransactionCustomerDetailsTaxIDTypeCHVAT    TaxTransactionCustomerDetailsTaxIDType = "ch_vat"
 	TaxTransactionCustomerDetailsTaxIDTypeCLTIN    TaxTransactionCustomerDetailsTaxIDType = "cl_tin"
+	TaxTransactionCustomerDetailsTaxIDTypeCNTIN    TaxTransactionCustomerDetailsTaxIDType = "cn_tin"
+	TaxTransactionCustomerDetailsTaxIDTypeCONIT    TaxTransactionCustomerDetailsTaxIDType = "co_nit"
+	TaxTransactionCustomerDetailsTaxIDTypeCRTIN    TaxTransactionCustomerDetailsTaxIDType = "cr_tin"
+	TaxTransactionCustomerDetailsTaxIDTypeDORCN    TaxTransactionCustomerDetailsTaxIDType = "do_rcn"
+	TaxTransactionCustomerDetailsTaxIDTypeECRUC    TaxTransactionCustomerDetailsTaxIDType = "ec_ruc"
 	TaxTransactionCustomerDetailsTaxIDTypeEGTIN    TaxTransactionCustomerDetailsTaxIDType = "eg_tin"
 	TaxTransactionCustomerDetailsTaxIDTypeESCIF    TaxTransactionCustomerDetailsTaxIDType = "es_cif"
 	TaxTransactionCustomerDetailsTaxIDTypeEUOSSVAT TaxTransactionCustomerDetailsTaxIDType = "eu_oss_vat"
@@ -58,19 +66,26 @@ const (
 	TaxTransactionCustomerDetailsTaxIDTypeMYSST    TaxTransactionCustomerDetailsTaxIDType = "my_sst"
 	TaxTransactionCustomerDetailsTaxIDTypeNOVAT    TaxTransactionCustomerDetailsTaxIDType = "no_vat"
 	TaxTransactionCustomerDetailsTaxIDTypeNZGST    TaxTransactionCustomerDetailsTaxIDType = "nz_gst"
+	TaxTransactionCustomerDetailsTaxIDTypePERUC    TaxTransactionCustomerDetailsTaxIDType = "pe_ruc"
 	TaxTransactionCustomerDetailsTaxIDTypePHTIN    TaxTransactionCustomerDetailsTaxIDType = "ph_tin"
+	TaxTransactionCustomerDetailsTaxIDTypeROTIN    TaxTransactionCustomerDetailsTaxIDType = "ro_tin"
+	TaxTransactionCustomerDetailsTaxIDTypeRSPIB    TaxTransactionCustomerDetailsTaxIDType = "rs_pib"
 	TaxTransactionCustomerDetailsTaxIDTypeRUINN    TaxTransactionCustomerDetailsTaxIDType = "ru_inn"
 	TaxTransactionCustomerDetailsTaxIDTypeRUKPP    TaxTransactionCustomerDetailsTaxIDType = "ru_kpp"
 	TaxTransactionCustomerDetailsTaxIDTypeSAVAT    TaxTransactionCustomerDetailsTaxIDType = "sa_vat"
 	TaxTransactionCustomerDetailsTaxIDTypeSGGST    TaxTransactionCustomerDetailsTaxIDType = "sg_gst"
 	TaxTransactionCustomerDetailsTaxIDTypeSGUEN    TaxTransactionCustomerDetailsTaxIDType = "sg_uen"
 	TaxTransactionCustomerDetailsTaxIDTypeSITIN    TaxTransactionCustomerDetailsTaxIDType = "si_tin"
+	TaxTransactionCustomerDetailsTaxIDTypeSVNIT    TaxTransactionCustomerDetailsTaxIDType = "sv_nit"
 	TaxTransactionCustomerDetailsTaxIDTypeTHVAT    TaxTransactionCustomerDetailsTaxIDType = "th_vat"
 	TaxTransactionCustomerDetailsTaxIDTypeTRTIN    TaxTransactionCustomerDetailsTaxIDType = "tr_tin"
 	TaxTransactionCustomerDetailsTaxIDTypeTWVAT    TaxTransactionCustomerDetailsTaxIDType = "tw_vat"
 	TaxTransactionCustomerDetailsTaxIDTypeUAVAT    TaxTransactionCustomerDetailsTaxIDType = "ua_vat"
 	TaxTransactionCustomerDetailsTaxIDTypeUnknown  TaxTransactionCustomerDetailsTaxIDType = "unknown"
 	TaxTransactionCustomerDetailsTaxIDTypeUSEIN    TaxTransactionCustomerDetailsTaxIDType = "us_ein"
+	TaxTransactionCustomerDetailsTaxIDTypeUYRUC    TaxTransactionCustomerDetailsTaxIDType = "uy_ruc"
+	TaxTransactionCustomerDetailsTaxIDTypeVERIF    TaxTransactionCustomerDetailsTaxIDType = "ve_rif"
+	TaxTransactionCustomerDetailsTaxIDTypeVNTIN    TaxTransactionCustomerDetailsTaxIDType = "vn_tin"
 	TaxTransactionCustomerDetailsTaxIDTypeZAVAT    TaxTransactionCustomerDetailsTaxIDType = "za_vat"
 )
 
@@ -119,16 +134,18 @@ type TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType string
 
 // List of values that TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType can take
 const (
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeGST      TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "gst"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeHST      TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "hst"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeIGST     TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "igst"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeJCT      TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "jct"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeLeaseTax TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "lease_tax"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypePST      TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "pst"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeQST      TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "qst"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeRST      TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "rst"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeSalesTax TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "sales_tax"
-	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeVAT      TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "vat"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeAmusementTax      TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "amusement_tax"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeCommunicationsTax TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "communications_tax"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeGST               TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "gst"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeHST               TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "hst"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeIGST              TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "igst"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeJCT               TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "jct"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeLeaseTax          TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "lease_tax"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypePST               TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "pst"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeQST               TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "qst"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeRST               TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "rst"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeSalesTax          TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "sales_tax"
+	TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxTypeVAT               TaxTransactionShippingCostTaxBreakdownTaxRateDetailsTaxType = "vat"
 )
 
 // The reasoning behind this tax, for example, if the product is tax exempt. The possible values for this field may be extended as new tax rules are supported.
@@ -165,6 +182,13 @@ const (
 // Retrieves a Tax Transaction object.
 type TaxTransactionParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxTransactionParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // The line item amounts to reverse.
@@ -183,6 +207,15 @@ type TaxTransactionCreateReversalLineItemParams struct {
 	Reference *string `form:"reference"`
 }
 
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TaxTransactionCreateReversalLineItemParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // The shipping cost to reverse.
 type TaxTransactionCreateReversalShippingCostParams struct {
 	// The amount to reverse, in negative integer cents.
@@ -194,8 +227,14 @@ type TaxTransactionCreateReversalShippingCostParams struct {
 // Partially or fully reverses a previously created Transaction.
 type TaxTransactionCreateReversalParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// A flat amount to reverse across the entire transaction, in negative integer cents. This value represents the total amount to refund from the transaction, including taxes.
+	FlatAmount *int64 `form:"flat_amount"`
 	// The line item amounts to reverse.
 	LineItems []*TaxTransactionCreateReversalLineItemParams `form:"line_items"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// If `partial`, the provided line item or shipping cost amounts are reversed. If `full`, the original transaction is fully reversed.
 	Mode *string `form:"mode"`
 	// The ID of the Transaction to partially or fully reverse.
@@ -206,24 +245,63 @@ type TaxTransactionCreateReversalParams struct {
 	ShippingCost *TaxTransactionCreateReversalShippingCostParams `form:"shipping_cost"`
 }
 
+// AddExpand appends a new field to expand.
+func (p *TaxTransactionCreateReversalParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TaxTransactionCreateReversalParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // Creates a Tax Transaction from a calculation.
 type TaxTransactionCreateFromCalculationParams struct {
 	Params `form:"*"`
 	// Tax Calculation ID to be used as input when creating the transaction.
 	Calculation *string `form:"calculation"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// A custom order or sale identifier, such as 'myOrder_123'. Must be unique across all transactions, including reversals.
 	Reference *string `form:"reference"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxTransactionCreateFromCalculationParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TaxTransactionCreateFromCalculationParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Retrieves the line items of a committed standalone transaction as a collection.
 type TaxTransactionListLineItemsParams struct {
 	ListParams  `form:"*"`
 	Transaction *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxTransactionListLineItemsParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // The customer's tax IDs (for example, EU VAT numbers).
 type TaxTransactionCustomerDetailsTaxID struct {
-	// The type of the tax ID, one of `eu_vat`, `br_cnpj`, `br_cpf`, `eu_oss_vat`, `gb_vat`, `nz_gst`, `au_abn`, `au_arn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ru_kpp`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `my_sst`, `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, `my_frp`, `il_vat`, `ge_vat`, `ua_vat`, `is_vat`, `bg_uic`, `hu_tin`, `si_tin`, `ke_pin`, `tr_tin`, `eg_tin`, `ph_tin`, or `unknown`
+	// The type of the tax ID, one of `ad_nrt`, `ar_cuit`, `eu_vat`, `bo_tin`, `br_cnpj`, `br_cpf`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eu_oss_vat`, `pe_ruc`, `ro_tin`, `rs_pib`, `sv_nit`, `uy_ruc`, `ve_rif`, `vn_tin`, `gb_vat`, `nz_gst`, `au_abn`, `au_arn`, `in_gst`, `no_vat`, `za_vat`, `ch_vat`, `mx_rfc`, `sg_uen`, `ru_inn`, `ru_kpp`, `ca_bn`, `hk_br`, `es_cif`, `tw_vat`, `th_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `li_uid`, `my_itn`, `us_ein`, `kr_brn`, `ca_qst`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `my_sst`, `sg_gst`, `ae_trn`, `cl_tin`, `sa_vat`, `id_npwp`, `my_frp`, `il_vat`, `ge_vat`, `ua_vat`, `is_vat`, `bg_uic`, `hu_tin`, `si_tin`, `ke_pin`, `tr_tin`, `eg_tin`, `ph_tin`, or `unknown`
 	Type TaxTransactionCustomerDetailsTaxIDType `json:"type"`
 	// The value of the tax ID.
 	Value string `json:"value"`
@@ -288,7 +366,7 @@ type TaxTransactionShippingCost struct {
 	Amount int64 `json:"amount"`
 	// The amount of tax calculated for shipping, in integer cents.
 	AmountTax int64 `json:"amount_tax"`
-	// The ID of an existing [ShippingRate](https://stripe.com/docs/api/shipping_rates/object). (It is not populated for the transaction resource object and will be removed in the next API version.)
+	// The ID of an existing [ShippingRate](https://stripe.com/docs/api/shipping_rates/object).
 	ShippingRate string `json:"shipping_rate"`
 	// Specifies whether the `amount` includes taxes. If `tax_behavior=inclusive`, then the amount includes taxes.
 	TaxBehavior TaxTransactionShippingCostTaxBehavior `json:"tax_behavior"`

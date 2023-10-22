@@ -8,7 +8,7 @@ package stripe
 
 import (
 	"encoding/json"
-	"github.com/stripe/stripe-go/v74/form"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
 // Describes how to compute the price per period. Either `per_unit` or `tiered`. `per_unit` indicates that the fixed amount (specified in `unit_amount` or `unit_amount_decimal`) will be charged per unit in `quantity` (for prices with `usage_type=licensed`), or per unit of total usage (for prices with `usage_type=metered`). `tiered` indicates that the unit pricing will be computed using a tiering strategy as defined using the `tiers` and `tiers_mode` attributes.
@@ -28,6 +28,14 @@ const (
 	PriceCurrencyOptionsTaxBehaviorExclusive   PriceCurrencyOptionsTaxBehavior = "exclusive"
 	PriceCurrencyOptionsTaxBehaviorInclusive   PriceCurrencyOptionsTaxBehavior = "inclusive"
 	PriceCurrencyOptionsTaxBehaviorUnspecified PriceCurrencyOptionsTaxBehavior = "unspecified"
+)
+
+// The behavior controlling at what point in the subscription lifecycle to migrate the price
+type PriceMigrateToBehavior string
+
+// List of values that PriceMigrateToBehavior can take
+const (
+	PriceMigrateToBehaviorAtCycleEnd PriceMigrateToBehavior = "at_cycle_end"
 )
 
 // Specifies a usage aggregation strategy for prices of `usage_type=metered`. Allowed values are `sum` for summing up all usage during a period, `last_during_period` for using the last usage record reported within a period, `last_ever` for using the last usage record ever (across period bounds) or `max` which uses the usage record with the maximum reported usage during a period. Defaults to `sum`.
@@ -104,8 +112,15 @@ const (
 // to an hour behind during outages. Search functionality is not available to merchants in India.
 type PriceSearchParams struct {
 	SearchParams `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// A cursor for pagination across multiple pages of results. Don't include this parameter on the first call. Use the next_page value returned in a previous response to request subsequent results.
 	Page *string `form:"page"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *PriceSearchParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Only return prices with these recurring fields.
@@ -127,6 +142,8 @@ type PriceListParams struct {
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Only return prices for the given currency.
 	Currency *string `form:"currency"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Only return the price with these lookup_keys, if any exist.
 	LookupKeys []*string `form:"lookup_keys"`
 	// Only return prices for the given product.
@@ -135,6 +152,11 @@ type PriceListParams struct {
 	Recurring *PriceListRecurringParams `form:"recurring"`
 	// Only return prices of type `recurring` or `one_time`.
 	Type *string `form:"type"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *PriceListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // When set, provides configuration for the amount to be adjusted by the customer during Checkout Sessions and Payment Links.
@@ -217,6 +239,15 @@ type PriceProductDataParams struct {
 	UnitLabel *string `form:"unit_label"`
 }
 
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PriceProductDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // The recurring components of a price such as `interval` and `usage_type`.
 type PriceRecurringParams struct {
 	// Specifies a usage aggregation strategy for prices of `usage_type=metered`. Allowed values are `sum` for summing up all usage during a period, `last_during_period` for using the last usage record reported within a period, `last_ever` for using the last usage record ever (across period bounds) or `max` which uses the usage record with the maximum reported usage during a period. Defaults to `sum`.
@@ -225,7 +256,7 @@ type PriceRecurringParams struct {
 	Interval *string `form:"interval"`
 	// The number of intervals between subscription billings. For example, `interval=month` and `interval_count=3` bills every 3 months. Maximum of one year interval allowed (1 year, 12 months, or 52 weeks).
 	IntervalCount *int64 `form:"interval_count"`
-	// Default number of trial days when subscribing a customer to this plan using [`trial_from_plan=true`](https://stripe.com/docs/api#create_subscription-trial_from_plan).
+	// Default number of trial days when subscribing a customer to this price using [`trial_from_plan=true`](https://stripe.com/docs/api#create_subscription-trial_from_plan).
 	TrialPeriodDays *int64 `form:"trial_period_days"`
 	// Configures how the quantity per period should be determined. Can be either `metered` or `licensed`. `licensed` automatically bills the `quantity` set when adding it to a subscription. `metered` aggregates the total usage based on usage records. Defaults to `licensed`.
 	UsageType *string `form:"usage_type"`
@@ -274,8 +305,14 @@ type PriceParams struct {
 	CurrencyOptions map[string]*PriceCurrencyOptionsParams `form:"currency_options"`
 	// When set, provides configuration for the amount to be adjusted by the customer during Checkout Sessions and Payment Links.
 	CustomUnitAmount *PriceCustomUnitAmountParams `form:"custom_unit_amount"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// A lookup key used to retrieve prices dynamically from a static string. This may be up to 200 characters.
 	LookupKey *string `form:"lookup_key"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// If specified, subscriptions using this price will be updated to use the new referenced price.
+	MigrateTo *PriceMigrateToParams `form:"migrate_to"`
 	// A brief description of the price, hidden from customers.
 	Nickname *string `form:"nickname"`
 	// The ID of the product that this price will belong to.
@@ -298,6 +335,30 @@ type PriceParams struct {
 	UnitAmount *int64 `form:"unit_amount"`
 	// Same as `unit_amount`, but accepts a decimal value in cents (or local equivalent) with at most 12 decimal places. Only one of `unit_amount` and `unit_amount_decimal` can be set.
 	UnitAmountDecimal *float64 `form:"unit_amount_decimal,high_precision"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *PriceParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PriceParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// If specified, subscriptions using this price will be updated to use the new referenced price.
+type PriceMigrateToParams struct {
+	// The behavior controlling the point in the subscription lifecycle after which to migrate the price. Currently must be `at_cycle_end`.
+	Behavior *string `form:"behavior"`
+	// The time after which subscriptions should start using the new price.
+	EffectiveAfter *int64 `form:"effective_after"`
+	// The ID of the price object.
+	Price *string `form:"price"`
 }
 
 // When set, provides configuration for the amount to be adjusted by the customer during Checkout Sessions and Payment Links.
@@ -332,9 +393,9 @@ type PriceCurrencyOptions struct {
 	TaxBehavior PriceCurrencyOptionsTaxBehavior `json:"tax_behavior"`
 	// Each element represents a pricing tier. This parameter requires `billing_scheme` to be set to `tiered`. See also the documentation for `billing_scheme`.
 	Tiers []*PriceCurrencyOptionsTier `json:"tiers"`
-	// The unit amount in %s to be charged, represented as a whole integer if possible. Only set if `billing_scheme=per_unit`.
+	// The unit amount in cents (or local equivalent) to be charged, represented as a whole integer if possible. Only set if `billing_scheme=per_unit`.
 	UnitAmount int64 `json:"unit_amount"`
-	// The unit amount in %s to be charged, represented as a decimal string with at most 12 decimal places. Only set if `billing_scheme=per_unit`.
+	// The unit amount in cents (or local equivalent) to be charged, represented as a decimal string with at most 12 decimal places. Only set if `billing_scheme=per_unit`.
 	UnitAmountDecimal float64 `json:"unit_amount_decimal,string"`
 }
 
@@ -346,6 +407,16 @@ type PriceCustomUnitAmount struct {
 	Minimum int64 `json:"minimum"`
 	// The starting unit amount which can be updated by the customer.
 	Preset int64 `json:"preset"`
+}
+
+// Subscriptions using this price will be migrated to use the new referenced price.
+type PriceMigrateTo struct {
+	// The behavior controlling at what point in the subscription lifecycle to migrate the price
+	Behavior PriceMigrateToBehavior `json:"behavior"`
+	// The unix timestamp after at which subscriptions will start to migrate to the new price.
+	EffectiveAfter int64 `json:"effective_after"`
+	// The id of the price being migrated to
+	Price string `json:"price"`
 }
 
 // The recurring components of a price such as `interval` and `usage_type`.
@@ -413,6 +484,8 @@ type Price struct {
 	LookupKey string `json:"lookup_key"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
 	Metadata map[string]string `json:"metadata"`
+	// Subscriptions using this price will be migrated to use the new referenced price.
+	MigrateTo *PriceMigrateTo `json:"migrate_to"`
 	// A brief description of the price, hidden from customers.
 	Nickname string `json:"nickname"`
 	// String representing the object's type. Objects of the same type share the same value.
@@ -431,9 +504,9 @@ type Price struct {
 	TransformQuantity *PriceTransformQuantity `json:"transform_quantity"`
 	// One of `one_time` or `recurring` depending on whether the price is for a one-time purchase or a recurring (subscription) purchase.
 	Type PriceType `json:"type"`
-	// The unit amount in %s to be charged, represented as a whole integer if possible. Only set if `billing_scheme=per_unit`.
+	// The unit amount in cents (or local equivalent) to be charged, represented as a whole integer if possible. Only set if `billing_scheme=per_unit`.
 	UnitAmount int64 `json:"unit_amount"`
-	// The unit amount in %s to be charged, represented as a decimal string with at most 12 decimal places. Only set if `billing_scheme=per_unit`.
+	// The unit amount in cents (or local equivalent) to be charged, represented as a decimal string with at most 12 decimal places. Only set if `billing_scheme=per_unit`.
 	UnitAmountDecimal float64 `json:"unit_amount_decimal,string"`
 }
 

@@ -10,8 +10,8 @@ package reader
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v74"
-	"github.com/stripe/stripe-go/v74/form"
+	stripe "github.com/stripe/stripe-go/v76"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
 // Client is used to invoke /terminal/readers APIs.
@@ -85,6 +85,51 @@ func CancelAction(id string, params *stripe.TerminalReaderCancelActionParams) (*
 // CancelAction is the method for the `POST /v1/terminal/readers/{reader}/cancel_action` API.
 func (c Client) CancelAction(id string, params *stripe.TerminalReaderCancelActionParams) (*stripe.TerminalReader, error) {
 	path := stripe.FormatURLPath("/v1/terminal/readers/%s/cancel_action", id)
+	reader := &stripe.TerminalReader{}
+	err := c.B.Call(http.MethodPost, path, c.Key, params, reader)
+	return reader, err
+}
+
+// CollectInputs is the method for the `POST /v1/terminal/readers/{reader}/collect_inputs` API.
+func CollectInputs(id string, params *stripe.TerminalReaderCollectInputsParams) (*stripe.TerminalReader, error) {
+	return getC().CollectInputs(id, params)
+}
+
+// CollectInputs is the method for the `POST /v1/terminal/readers/{reader}/collect_inputs` API.
+func (c Client) CollectInputs(id string, params *stripe.TerminalReaderCollectInputsParams) (*stripe.TerminalReader, error) {
+	path := stripe.FormatURLPath("/v1/terminal/readers/%s/collect_inputs", id)
+	reader := &stripe.TerminalReader{}
+	err := c.B.Call(http.MethodPost, path, c.Key, params, reader)
+	return reader, err
+}
+
+// CollectPaymentMethod is the method for the `POST /v1/terminal/readers/{reader}/collect_payment_method` API.
+func CollectPaymentMethod(id string, params *stripe.TerminalReaderCollectPaymentMethodParams) (*stripe.TerminalReader, error) {
+	return getC().CollectPaymentMethod(id, params)
+}
+
+// CollectPaymentMethod is the method for the `POST /v1/terminal/readers/{reader}/collect_payment_method` API.
+func (c Client) CollectPaymentMethod(id string, params *stripe.TerminalReaderCollectPaymentMethodParams) (*stripe.TerminalReader, error) {
+	path := stripe.FormatURLPath(
+		"/v1/terminal/readers/%s/collect_payment_method",
+		id,
+	)
+	reader := &stripe.TerminalReader{}
+	err := c.B.Call(http.MethodPost, path, c.Key, params, reader)
+	return reader, err
+}
+
+// ConfirmPaymentIntent is the method for the `POST /v1/terminal/readers/{reader}/confirm_payment_intent` API.
+func ConfirmPaymentIntent(id string, params *stripe.TerminalReaderConfirmPaymentIntentParams) (*stripe.TerminalReader, error) {
+	return getC().ConfirmPaymentIntent(id, params)
+}
+
+// ConfirmPaymentIntent is the method for the `POST /v1/terminal/readers/{reader}/confirm_payment_intent` API.
+func (c Client) ConfirmPaymentIntent(id string, params *stripe.TerminalReaderConfirmPaymentIntentParams) (*stripe.TerminalReader, error) {
+	path := stripe.FormatURLPath(
+		"/v1/terminal/readers/%s/confirm_payment_intent",
+		id,
+	)
 	reader := &stripe.TerminalReader{}
 	err := c.B.Call(http.MethodPost, path, c.Key, params, reader)
 	return reader, err

@@ -59,19 +59,52 @@ type IssuingTransactionListParams struct {
 	Created *int64 `form:"created"`
 	// Only return transactions that were created during the given date interval.
 	CreatedRange *RangeQueryParams `form:"created"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Only return transactions that have the given type. One of `capture` or `refund`.
 	Type *string `form:"type"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *IssuingTransactionListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Retrieves an Issuing Transaction object.
 type IssuingTransactionParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *IssuingTransactionParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *IssuingTransactionParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Detailed breakdown of amount components. These amounts are denominated in `currency` and in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal).
 type IssuingTransactionAmountDetails struct {
 	// The fee charged by the ATM for the cash withdrawal.
 	ATMFee int64 `json:"atm_fee"`
+	// The amount of cash requested by the cardholder.
+	CashbackAmount int64 `json:"cashback_amount"`
+}
+
+// Details about the transaction, such as processing dates, set by the card network.
+type IssuingTransactionNetworkData struct {
+	// The date the transaction was processed by the card network. This can be different from the date the seller recorded the transaction depending on when the acquirer submits the transaction to the network.
+	ProcessingDate string `json:"processing_date"`
 }
 
 // The legs of the trip.
@@ -194,10 +227,14 @@ type IssuingTransaction struct {
 	MerchantData     *IssuingAuthorizationMerchantData `json:"merchant_data"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
 	Metadata map[string]string `json:"metadata"`
+	// Details about the transaction, such as processing dates, set by the card network.
+	NetworkData *IssuingTransactionNetworkData `json:"network_data"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
 	// Additional purchase information that is optionally provided by the merchant.
 	PurchaseDetails *IssuingTransactionPurchaseDetails `json:"purchase_details"`
+	// [Token](https://stripe.com/docs/api/issuing/tokens/object) object used for this transaction. If a network token was not used for this transaction, this field will be null.
+	Token *IssuingToken `json:"token"`
 	// [Treasury](https://stripe.com/docs/api/treasury) details related to this transaction if it was created on a [FinancialAccount](/docs/api/treasury/financial_accounts
 	Treasury *IssuingTransactionTreasury `json:"treasury"`
 	// The nature of the transaction.

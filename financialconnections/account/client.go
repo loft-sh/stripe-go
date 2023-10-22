@@ -10,8 +10,8 @@ package account
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v74"
-	"github.com/stripe/stripe-go/v74/form"
+	stripe "github.com/stripe/stripe-go/v76"
+	"github.com/stripe/stripe-go/v76/form"
 )
 
 // Client is used to invoke /financial_connections/accounts APIs.
@@ -58,6 +58,38 @@ func Refresh(id string, params *stripe.FinancialConnectionsAccountRefreshParams)
 func (c Client) Refresh(id string, params *stripe.FinancialConnectionsAccountRefreshParams) (*stripe.FinancialConnectionsAccount, error) {
 	path := stripe.FormatURLPath(
 		"/v1/financial_connections/accounts/%s/refresh",
+		id,
+	)
+	account := &stripe.FinancialConnectionsAccount{}
+	err := c.B.Call(http.MethodPost, path, c.Key, params, account)
+	return account, err
+}
+
+// Subscribe is the method for the `POST /v1/financial_connections/accounts/{account}/subscribe` API.
+func Subscribe(id string, params *stripe.FinancialConnectionsAccountSubscribeParams) (*stripe.FinancialConnectionsAccount, error) {
+	return getC().Subscribe(id, params)
+}
+
+// Subscribe is the method for the `POST /v1/financial_connections/accounts/{account}/subscribe` API.
+func (c Client) Subscribe(id string, params *stripe.FinancialConnectionsAccountSubscribeParams) (*stripe.FinancialConnectionsAccount, error) {
+	path := stripe.FormatURLPath(
+		"/v1/financial_connections/accounts/%s/subscribe",
+		id,
+	)
+	account := &stripe.FinancialConnectionsAccount{}
+	err := c.B.Call(http.MethodPost, path, c.Key, params, account)
+	return account, err
+}
+
+// Unsubscribe is the method for the `POST /v1/financial_connections/accounts/{account}/unsubscribe` API.
+func Unsubscribe(id string, params *stripe.FinancialConnectionsAccountUnsubscribeParams) (*stripe.FinancialConnectionsAccount, error) {
+	return getC().Unsubscribe(id, params)
+}
+
+// Unsubscribe is the method for the `POST /v1/financial_connections/accounts/{account}/unsubscribe` API.
+func (c Client) Unsubscribe(id string, params *stripe.FinancialConnectionsAccountUnsubscribeParams) (*stripe.FinancialConnectionsAccount, error) {
+	path := stripe.FormatURLPath(
+		"/v1/financial_connections/accounts/%s/unsubscribe",
 		id,
 	)
 	account := &stripe.FinancialConnectionsAccount{}

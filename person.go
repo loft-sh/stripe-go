@@ -74,6 +74,8 @@ type PersonListRelationshipParams struct {
 	Director *bool `form:"director"`
 	// A filter on the list of people returned based on whether these people are executives of the account's company.
 	Executive *bool `form:"executive"`
+	// A filter on the list of people returned based on whether these people are legal guardians of the account's representative.
+	LegalGuardian *bool `form:"legal_guardian"`
 	// A filter on the list of people returned based on whether these people are owners of the account's company.
 	Owner *bool `form:"owner"`
 	// A filter on the list of people returned based on whether these people are the representative of the account's company.
@@ -84,8 +86,31 @@ type PersonListRelationshipParams struct {
 type PersonListParams struct {
 	ListParams `form:"*"`
 	Account    *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Filters on the list of people returned based on the person's relationship to the account's company.
 	Relationship *PersonListRelationshipParams `form:"relationship"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *PersonListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Details on the legal guardian's acceptance of the main Stripe service agreement.
+type PersonAdditionalTOSAcceptancesAccountParams struct {
+	// The Unix timestamp marking when the account representative accepted the service agreement.
+	Date *int64 `form:"date"`
+	// The IP address from which the account representative accepted the service agreement.
+	IP *string `form:"ip"`
+	// The user agent of the browser from which the account representative accepted the service agreement.
+	UserAgent *string `form:"user_agent"`
+}
+
+// Details on the legal guardian's acceptance of the required Stripe agreements.
+type PersonAdditionalTOSAcceptancesParams struct {
+	// Details on the legal guardian's acceptance of the main Stripe service agreement.
+	Account *PersonAdditionalTOSAcceptancesAccountParams `form:"account"`
 }
 
 // The Kana variation of the person's address (Japan only).
@@ -168,6 +193,8 @@ type PersonRelationshipParams struct {
 	Director *bool `form:"director"`
 	// Whether the person has significant responsibility to control, manage, or direct the organization.
 	Executive *bool `form:"executive"`
+	// Whether the person is the legal guardian of the account's representative.
+	LegalGuardian *bool `form:"legal_guardian"`
 	// Whether the person is an owner of the account's legal entity.
 	Owner *bool `form:"owner"`
 	// The percent owned by the person of the account's legal entity.
@@ -198,6 +225,8 @@ type PersonVerificationParams struct {
 type PersonParams struct {
 	Params  `form:"*"`
 	Account *string `form:"-"` // Included in URL
+	// Details on the legal guardian's acceptance of the required Stripe agreements.
+	AdditionalTOSAcceptances *PersonAdditionalTOSAcceptancesParams `form:"additional_tos_acceptances"`
 	// The person's address.
 	Address *AddressParams `form:"address"`
 	// The Kana variation of the person's address (Japan only).
@@ -210,6 +239,8 @@ type PersonParams struct {
 	Documents *PersonDocumentsParams `form:"documents"`
 	// The person's email address.
 	Email *string `form:"email"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The person's first name.
 	FirstName *string `form:"first_name"`
 	// The Kana variation of the person's first name (Japan only).
@@ -220,9 +251,9 @@ type PersonParams struct {
 	FullNameAliases []*string `form:"full_name_aliases"`
 	// The person's gender (International regulations require either "male" or "female").
 	Gender *string `form:"gender"`
-	// The person's ID number, as appropriate for their country. For example, a social security number in the U.S., social insurance number in Canada, etc. Instead of the number itself, you can also provide a [PII token provided by Stripe.js](https://stripe.com/docs/js/tokens_sources/create_token?type=pii).
+	// The person's ID number, as appropriate for their country. For example, a social security number in the U.S., social insurance number in Canada, etc. Instead of the number itself, you can also provide a [PII token provided by Stripe.js](https://stripe.com/docs/js/tokens/create_token?type=pii).
 	IDNumber *string `form:"id_number"`
-	// The person's secondary ID number, as appropriate for their country, will be used for enhanced verification checks. In Thailand, this would be the laser code found on the back of an ID card. Instead of the number itself, you can also provide a [PII token provided by Stripe.js](https://stripe.com/docs/js/tokens_sources/create_token?type=pii).
+	// The person's secondary ID number, as appropriate for their country, will be used for enhanced verification checks. In Thailand, this would be the laser code found on the back of an ID card. Instead of the number itself, you can also provide a [PII token provided by Stripe.js](https://stripe.com/docs/js/tokens/create_token?type=pii).
 	IDNumberSecondary *string `form:"id_number_secondary"`
 	// The person's last name.
 	LastName *string `form:"last_name"`
@@ -232,6 +263,8 @@ type PersonParams struct {
 	LastNameKanji *string `form:"last_name_kanji"`
 	// The person's maiden name.
 	MaidenName *string `form:"maiden_name"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// The country where the person is a national. Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)), or "XX" if unavailable.
 	Nationality *string `form:"nationality"`
 	// A [person token](https://stripe.com/docs/connect/account-tokens), used to securely provide details to the person.
@@ -248,6 +281,32 @@ type PersonParams struct {
 	SSNLast4 *string `form:"ssn_last_4"`
 	// The person's verification status.
 	Verification *PersonVerificationParams `form:"verification"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *PersonParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PersonParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+type PersonAdditionalTOSAcceptancesAccount struct {
+	// The Unix timestamp marking when the legal guardian accepted the service agreement.
+	Date int64 `json:"date"`
+	// The IP address from which the legal guardian accepted the service agreement.
+	IP string `json:"ip"`
+	// The user agent of the browser from which the legal guardian accepted the service agreement.
+	UserAgent string `json:"user_agent"`
+}
+type PersonAdditionalTOSAcceptances struct {
+	Account *PersonAdditionalTOSAcceptancesAccount `json:"account"`
 }
 
 // The Kana variation of the person's address (Japan only).
@@ -312,7 +371,7 @@ type PersonFutureRequirementsError struct {
 	Requirement string `json:"requirement"`
 }
 
-// Information about the upcoming new requirements for this person, including what information needs to be collected, and by when.
+// Information about the [upcoming new requirements for this person](https://stripe.com/docs/connect/custom-accounts/future-requirements), including what information needs to be collected, and by when.
 type PersonFutureRequirements struct {
 	// Fields that are due and can be satisfied by providing the corresponding alternative fields instead.
 	Alternatives []*PersonFutureRequirementsAlternative `json:"alternatives"`
@@ -332,6 +391,8 @@ type PersonRelationship struct {
 	Director bool `json:"director"`
 	// Whether the person has significant responsibility to control, manage, or direct the organization.
 	Executive bool `json:"executive"`
+	// Whether the person is the legal guardian of the account's representative.
+	LegalGuardian bool `json:"legal_guardian"`
 	// Whether the person is an owner of the account's legal entity.
 	Owner bool `json:"owner"`
 	// The percent owned by the person of the account's legal entity.
@@ -392,14 +453,15 @@ type PersonVerification struct {
 // This is an object representing a person associated with a Stripe account.
 //
 // A platform cannot access a Standard or Express account's persons after the account starts onboarding, such as after generating an account link for the account.
-// See the [Standard onboarding](https://stripe.com/docs/connect/standard-accounts) or [Express onboarding documentation](https://stripe.com/docs/connect/express-accounts) for information about platform pre-filling and account onboarding steps.
+// See the [Standard onboarding](https://stripe.com/docs/connect/standard-accounts) or [Express onboarding documentation](https://stripe.com/docs/connect/express-accounts) for information about platform prefilling and account onboarding steps.
 //
-// Related guide: [Handling identity verification with the API](https://stripe.com/docs/connect/identity-verification-api#person-information)
+// Related guide: [Handling identity verification with the API](https://stripe.com/docs/connect/handling-api-verification#person-information)
 type Person struct {
 	APIResource
 	// The account the person is associated with.
-	Account string   `json:"account"`
-	Address *Address `json:"address"`
+	Account                  string                          `json:"account"`
+	AdditionalTOSAcceptances *PersonAdditionalTOSAcceptances `json:"additional_tos_acceptances"`
+	Address                  *Address                        `json:"address"`
 	// The Kana variation of the person's address (Japan only).
 	AddressKana *PersonAddressKana `json:"address_kana"`
 	// The Kanji variation of the person's address (Japan only).
@@ -418,13 +480,13 @@ type Person struct {
 	FirstNameKanji string `json:"first_name_kanji"`
 	// A list of alternate names or aliases that the person is known by.
 	FullNameAliases []string `json:"full_name_aliases"`
-	// Information about the upcoming new requirements for this person, including what information needs to be collected, and by when.
+	// Information about the [upcoming new requirements for this person](https://stripe.com/docs/connect/custom-accounts/future-requirements), including what information needs to be collected, and by when.
 	FutureRequirements *PersonFutureRequirements `json:"future_requirements"`
 	// The person's gender (International regulations require either "male" or "female").
 	Gender string `json:"gender"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
-	// Whether the person's `id_number` was provided.
+	// Whether the person's `id_number` was provided. True if either the full ID number was provided or if only the required part of the ID number was provided (ex. last four of an individual's SSN for the US indicated by `ssn_last_4_provided`).
 	IDNumberProvided bool `json:"id_number_provided"`
 	// Whether the person's `id_number_secondary` was provided.
 	IDNumberSecondaryProvided bool `json:"id_number_secondary_provided"`

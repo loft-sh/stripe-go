@@ -6,6 +6,8 @@
 
 package stripe
 
+import "encoding/json"
+
 // The funding method type used to fund the customer balance. Permitted values include: `eu_bank_transfer`, `gb_bank_transfer`, `jp_bank_transfer`, `mx_bank_transfer`, or `us_bank_transfer`.
 type CustomerCashBalanceTransactionFundedBankTransferType string
 
@@ -28,11 +30,12 @@ const (
 	CustomerCashBalanceTransactionFundedBankTransferUSBankTransferNetworkSwift          CustomerCashBalanceTransactionFundedBankTransferUSBankTransferNetwork = "swift"
 )
 
-// The type of the cash balance transaction. One of `applied_to_payment`, `unapplied_from_payment`, `refunded_from_payment`, `funded`, `return_initiated`, or `return_canceled`. New types may be added in future. See [Customer Balance](https://stripe.com/docs/payments/customer-balance#types) to learn more about these types.
+// The type of the cash balance transaction. New types may be added in future. See [Customer Balance](https://stripe.com/docs/payments/customer-balance#types) to learn more about these types.
 type CustomerCashBalanceTransactionType string
 
 // List of values that CustomerCashBalanceTransactionType can take
 const (
+	CustomerCashBalanceTransactionTypeAdjustedForOverdraft CustomerCashBalanceTransactionType = "adjusted_for_overdraft"
 	CustomerCashBalanceTransactionTypeAppliedToPayment     CustomerCashBalanceTransactionType = "applied_to_payment"
 	CustomerCashBalanceTransactionTypeFunded               CustomerCashBalanceTransactionType = "funded"
 	CustomerCashBalanceTransactionTypeFundingReversed      CustomerCashBalanceTransactionType = "funding_reversed"
@@ -46,12 +49,33 @@ const (
 type CustomerCashBalanceTransactionParams struct {
 	Params   `form:"*"`
 	Customer *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerCashBalanceTransactionParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Returns a list of transactions that modified the customer's [cash balance](https://stripe.com/docs/payments/customer-balance).
 type CustomerCashBalanceTransactionListParams struct {
 	ListParams `form:"*"`
 	Customer   *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerCashBalanceTransactionListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+type CustomerCashBalanceTransactionAdjustedForOverdraft struct {
+	// The [Balance Transaction](https://stripe.com/docs/api/balance_transactions/object) that corresponds to funds taken out of your Stripe balance.
+	BalanceTransaction *BalanceTransaction `json:"balance_transaction"`
+	// The [Cash Balance Transaction](https://stripe.com/docs/api/cash_balance_transactions/object) that brought the customer balance negative, triggering the clawback of funds.
+	LinkedTransaction *CustomerCashBalanceTransaction `json:"linked_transaction"`
 }
 type CustomerCashBalanceTransactionAppliedToPayment struct {
 	// The [Payment Intent](https://stripe.com/docs/api/payment_intents/object) that funds were applied to.
@@ -115,7 +139,8 @@ type CustomerCashBalanceTransactionUnappliedFromPayment struct {
 // to payments, and refunds to the customer.
 type CustomerCashBalanceTransaction struct {
 	APIResource
-	AppliedToPayment *CustomerCashBalanceTransactionAppliedToPayment `json:"applied_to_payment"`
+	AdjustedForOverdraft *CustomerCashBalanceTransactionAdjustedForOverdraft `json:"adjusted_for_overdraft"`
+	AppliedToPayment     *CustomerCashBalanceTransactionAppliedToPayment     `json:"applied_to_payment"`
 	// Time at which the object was created. Measured in seconds since the Unix epoch.
 	Created int64 `json:"created"`
 	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
@@ -134,7 +159,7 @@ type CustomerCashBalanceTransaction struct {
 	// String representing the object's type. Objects of the same type share the same value.
 	Object              string                                             `json:"object"`
 	RefundedFromPayment *CustomerCashBalanceTransactionRefundedFromPayment `json:"refunded_from_payment"`
-	// The type of the cash balance transaction. One of `applied_to_payment`, `unapplied_from_payment`, `refunded_from_payment`, `funded`, `return_initiated`, or `return_canceled`. New types may be added in future. See [Customer Balance](https://stripe.com/docs/payments/customer-balance#types) to learn more about these types.
+	// The type of the cash balance transaction. New types may be added in future. See [Customer Balance](https://stripe.com/docs/payments/customer-balance#types) to learn more about these types.
 	Type                 CustomerCashBalanceTransactionType                  `json:"type"`
 	UnappliedFromPayment *CustomerCashBalanceTransactionUnappliedFromPayment `json:"unapplied_from_payment"`
 }
@@ -144,4 +169,23 @@ type CustomerCashBalanceTransactionList struct {
 	APIResource
 	ListMeta
 	Data []*CustomerCashBalanceTransaction `json:"data"`
+}
+
+// UnmarshalJSON handles deserialization of a CustomerCashBalanceTransaction.
+// This custom unmarshaling is needed because the resulting
+// property may be an id or the full struct if it was expanded.
+func (c *CustomerCashBalanceTransaction) UnmarshalJSON(data []byte) error {
+	if id, ok := ParseID(data); ok {
+		c.ID = id
+		return nil
+	}
+
+	type customerCashBalanceTransaction CustomerCashBalanceTransaction
+	var v customerCashBalanceTransaction
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	*c = CustomerCashBalanceTransaction(v)
+	return nil
 }

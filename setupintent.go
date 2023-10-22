@@ -8,6 +8,17 @@ package stripe
 
 import "encoding/json"
 
+// Controls whether this SetupIntent will accept redirect-based payment methods.
+//
+// Redirect-based payment methods may require your customer to be redirected to a payment method's app or site for authentication or additional steps. To [confirm](https://stripe.com/docs/api/setup_intents/confirm) this SetupIntent, you may be required to provide a `return_url` to redirect customers back to your site after they authenticate or complete the setup.
+type SetupIntentAutomaticPaymentMethodsAllowRedirects string
+
+// List of values that SetupIntentAutomaticPaymentMethodsAllowRedirects can take
+const (
+	SetupIntentAutomaticPaymentMethodsAllowRedirectsAlways SetupIntentAutomaticPaymentMethodsAllowRedirects = "always"
+	SetupIntentAutomaticPaymentMethodsAllowRedirectsNever  SetupIntentAutomaticPaymentMethodsAllowRedirects = "never"
+)
+
 // Reason for cancellation of this SetupIntent, one of `abandoned`, `requested_by_customer`, or `duplicate`.
 type SetupIntentCancellationReason string
 
@@ -97,26 +108,6 @@ const (
 	SetupIntentPaymentMethodOptionsACSSDebitVerificationMethodMicrodeposits SetupIntentPaymentMethodOptionsACSSDebitVerificationMethod = "microdeposits"
 )
 
-// Frequency interval of each recurring payment.
-type SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionInterval string
-
-// List of values that SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionInterval can take
-const (
-	SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionIntervalDay   SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionInterval = "day"
-	SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionIntervalMonth SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionInterval = "month"
-	SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionIntervalWeek  SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionInterval = "week"
-	SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionIntervalYear  SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionInterval = "year"
-)
-
-// Type of the mandate.
-type SetupIntentPaymentMethodOptionsBLIKMandateOptionsType string
-
-// List of values that SetupIntentPaymentMethodOptionsBLIKMandateOptionsType can take
-const (
-	SetupIntentPaymentMethodOptionsBLIKMandateOptionsTypeOffSession SetupIntentPaymentMethodOptionsBLIKMandateOptionsType = "off_session"
-	SetupIntentPaymentMethodOptionsBLIKMandateOptionsTypeOnSession  SetupIntentPaymentMethodOptionsBLIKMandateOptionsType = "on_session"
-)
-
 // One of `fixed` or `maximum`. If `fixed`, the `amount` param refers to the exact amount to be charged in future payments. If `maximum`, the amount charged can be up to the value passed for the `amount` param.
 type SetupIntentPaymentMethodOptionsCardMandateOptionsAmountType string
 
@@ -174,6 +165,15 @@ const (
 	SetupIntentPaymentMethodOptionsCardRequestThreeDSecureChallengeOnly SetupIntentPaymentMethodOptionsCardRequestThreeDSecure = "challenge_only"
 )
 
+// Settings for configuring manual entry of account details.
+type SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode string
+
+// List of values that SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode can take
+const (
+	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryModeAutomatic SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode = "automatic"
+	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryModeCustom    SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode = "custom"
+)
+
 // The list of permissions to request. The `payment_method` permission must be included.
 type SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission string
 
@@ -183,6 +183,17 @@ const (
 	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionOwnership     SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "ownership"
 	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionPaymentMethod SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "payment_method"
 	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPermissionTransactions  SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission = "transactions"
+)
+
+// Data features requested to be retrieved upon account creation.
+type SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch string
+
+// List of values that SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch can take
+const (
+	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchBalances         SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "balances"
+	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchInferredBalances SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "inferred_balances"
+	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchOwnership        SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "ownership"
+	SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetchTransactions     SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch = "transactions"
 )
 
 // Bank account verification method.
@@ -219,8 +230,12 @@ const (
 	SetupIntentUsageOnSession  SetupIntentUsage = "on_session"
 )
 
-// When enabled, this SetupIntent will accept payment methods that you have enabled in the Dashboard and are compatible with this SetupIntent's other parameters.
+// When you enable this parameter, this SetupIntent accepts payment methods that you enable in the Dashboard and that are compatible with its other parameters.
 type SetupIntentAutomaticPaymentMethodsParams struct {
+	// Controls whether this SetupIntent will accept redirect-based payment methods.
+	//
+	// Redirect-based payment methods may require your customer to be redirected to a payment method's app or site for authentication or additional steps. To [confirm](https://stripe.com/docs/api/setup_intents/confirm) this SetupIntent, you may be required to provide a `return_url` to redirect customers back to your site after they authenticate or complete the setup.
+	AllowRedirects *string `form:"allow_redirects"`
 	// Whether this feature is enabled.
 	Enabled *bool `form:"enabled"`
 }
@@ -244,11 +259,11 @@ type SetupIntentMandateDataCustomerAcceptanceParams struct {
 	Offline *SetupIntentMandateDataCustomerAcceptanceOfflineParams `form:"offline"`
 	// If this is a Mandate accepted online, this hash contains details about the online acceptance.
 	Online *SetupIntentMandateDataCustomerAcceptanceOnlineParams `form:"online"`
-	// The type of customer acceptance information included with the Mandate.
+	// The type of customer acceptance information included with the Mandate. One of `online` or `offline`.
 	Type MandateCustomerAcceptanceType `form:"type"`
 }
 
-// This hash contains details about the Mandate to create. This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
+// This hash contains details about the mandate to create. This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
 type SetupIntentMandateDataParams struct {
 	// This hash contains details about the customer acceptance of the Mandate.
 	CustomerAcceptance *SetupIntentMandateDataCustomerAcceptanceParams `form:"customer_acceptance"`
@@ -504,6 +519,15 @@ type SetupIntentPaymentMethodDataParams struct {
 	Zip *SetupIntentPaymentMethodDataZipParams `form:"zip"`
 }
 
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *SetupIntentPaymentMethodDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // Additional fields for Mandate creation
 type SetupIntentPaymentMethodOptionsACSSDebitMandateOptionsParams struct {
 	// A URL for custom mandate text to render during confirmation step.
@@ -528,12 +552,6 @@ type SetupIntentPaymentMethodOptionsACSSDebitParams struct {
 	MandateOptions *SetupIntentPaymentMethodOptionsACSSDebitMandateOptionsParams `form:"mandate_options"`
 	// Verification method for the intent
 	VerificationMethod *string `form:"verification_method"`
-}
-
-// If this is a `blik` PaymentMethod, this hash contains details about the BLIK payment method.
-type SetupIntentPaymentMethodOptionsBLIKParams struct {
-	// The 6-digit BLIK code that a customer has generated using their banking application. Can only be set on confirmation.
-	Code *string `form:"code"`
 }
 
 // Configuration options for setting up an eMandate for cards issued in India.
@@ -576,7 +594,7 @@ type SetupIntentPaymentMethodOptionsCardParams struct {
 
 // If this is a `link` PaymentMethod, this sub-hash contains details about the Link payment method options.
 type SetupIntentPaymentMethodOptionsLinkParams struct {
-	// Token used for persistent Link logins.
+	// [Deprecated] This is a legacy parameter that no longer has any function.
 	PersistentToken *string `form:"persistent_token"`
 }
 
@@ -584,6 +602,7 @@ type SetupIntentPaymentMethodOptionsLinkParams struct {
 type SetupIntentPaymentMethodOptionsPaypalParams struct {
 	// The PayPal Billing Agreement ID (BAID). This is an ID generated by PayPal which represents the mandate between the merchant and the customer.
 	BillingAgreementID *string `form:"billing_agreement_id"`
+	Currency           *string `form:"currency"`
 }
 
 // Additional fields for Mandate creation
@@ -595,10 +614,20 @@ type SetupIntentPaymentMethodOptionsSEPADebitParams struct {
 	MandateOptions *SetupIntentPaymentMethodOptionsSEPADebitMandateOptionsParams `form:"mandate_options"`
 }
 
+// Customize manual entry behavior
+type SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryParams struct {
+	// Settings for configuring manual entry of account details.
+	Mode *string `form:"mode"`
+}
+
 // Additional fields for Financial Connections Session creation
 type SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsParams struct {
+	// Customize manual entry behavior
+	ManualEntry *SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryParams `form:"manual_entry"`
 	// The list of permissions to request. If this parameter is passed, the `payment_method` permission must be included. Valid permissions include: `balances`, `ownership`, `payment_method`, and `transactions`.
 	Permissions []*string `form:"permissions"`
+	// List of data features that you would like to retrieve upon account creation.
+	Prefetch []*string `form:"prefetch"`
 	// For webview integrations only. Upon completing OAuth login in the native browser, the user will be redirected to this URL to return to your app.
 	ReturnURL *string `form:"return_url"`
 }
@@ -619,12 +648,10 @@ type SetupIntentPaymentMethodOptionsUSBankAccountParams struct {
 	VerificationMethod *string `form:"verification_method"`
 }
 
-// Payment-method-specific configuration for this SetupIntent.
+// Payment method-specific configuration for this SetupIntent.
 type SetupIntentPaymentMethodOptionsParams struct {
 	// If this is a `acss_debit` SetupIntent, this sub-hash contains details about the ACSS Debit payment method options.
 	ACSSDebit *SetupIntentPaymentMethodOptionsACSSDebitParams `form:"acss_debit"`
-	// If this is a `blik` PaymentMethod, this hash contains details about the BLIK payment method.
-	BLIK *SetupIntentPaymentMethodOptionsBLIKParams `form:"blik"`
 	// Configuration for any card setup attempted on this SetupIntent.
 	Card *SetupIntentPaymentMethodOptionsCardParams `form:"card"`
 	// If this is a `link` PaymentMethod, this sub-hash contains details about the Link payment method options.
@@ -637,7 +664,7 @@ type SetupIntentPaymentMethodOptionsParams struct {
 	USBankAccount *SetupIntentPaymentMethodOptionsUSBankAccountParams `form:"us_bank_account"`
 }
 
-// If this hash is populated, this SetupIntent will generate a single_use Mandate on success.
+// If you populate this hash, this SetupIntent generates a `single_use` mandate after successful completion.
 type SetupIntentSingleUseParams struct {
 	// Amount the customer is granting permission to collect later. A positive integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). The minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts). The amount value supports up to eight digits (e.g., a value of 99999999 for a USD charge of $999,999.99).
 	Amount *int64 `form:"amount"`
@@ -647,49 +674,75 @@ type SetupIntentSingleUseParams struct {
 
 // Creates a SetupIntent object.
 //
-// After the SetupIntent is created, attach a payment method and [confirm](https://stripe.com/docs/api/setup_intents/confirm)
-// to collect any required permissions to charge the payment method later.
+// After you create the SetupIntent, attach a payment method and [confirm](https://stripe.com/docs/api/setup_intents/confirm)
+// it to collect any required permissions to charge the payment method later.
 type SetupIntentParams struct {
 	Params `form:"*"`
 	// If present, the SetupIntent's payment method will be attached to the in-context Stripe Account.
 	//
 	// It can only be used for this Stripe Account's own money movement flows like InboundTransfer and OutboundTransfers. It cannot be set to true when setting up a PaymentMethod for a Customer, and defaults to false when attaching a PaymentMethod to a Customer.
 	AttachToSelf *bool `form:"attach_to_self"`
-	// When enabled, this SetupIntent will accept payment methods that you have enabled in the Dashboard and are compatible with this SetupIntent's other parameters.
+	// When you enable this parameter, this SetupIntent accepts payment methods that you enable in the Dashboard and that are compatible with its other parameters.
 	AutomaticPaymentMethods *SetupIntentAutomaticPaymentMethodsParams `form:"automatic_payment_methods"`
-	// The client secret of the SetupIntent. Required if a publishable key is used to retrieve the SetupIntent.
+	// The client secret of the SetupIntent. We require this string if you use a publishable key to retrieve the SetupIntent.
 	ClientSecret *string `form:"client_secret"`
-	// Set to `true` to attempt to confirm this SetupIntent immediately. This parameter defaults to `false`. If the payment method attached is a card, a return_url may be provided in case additional authentication is required.
+	// Set to `true` to attempt to confirm this SetupIntent immediately. This parameter defaults to `false`. If a card is the attached payment method, you can provide a `return_url` in case further authentication is necessary.
 	Confirm *bool `form:"confirm"`
+	// ID of the ConfirmationToken used to confirm this SetupIntent.
+	//
+	// If the provided ConfirmationToken contains properties that are also being provided in this request, such as `payment_method`, then the values in this request will take precedence.
+	ConfirmationToken *string `form:"confirmation_token"`
 	// ID of the Customer this SetupIntent belongs to, if one exists.
 	//
 	// If present, the SetupIntent's payment method will be attached to the Customer on successful setup. Payment methods attached to other Customers cannot be used with this SetupIntent.
 	Customer *string `form:"customer"`
 	// An arbitrary string attached to the object. Often useful for displaying to users.
 	Description *string `form:"description"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// Indicates the directions of money movement for which this payment method is intended to be used.
 	//
 	// Include `inbound` if you intend to use the payment method as the origin to pull funds from. Include `outbound` if you intend to use the payment method as the destination to send funds to. You can include both if you intend to use the payment method for both purposes.
 	FlowDirections []*string `form:"flow_directions"`
-	// This hash contains details about the Mandate to create. This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
+	// This hash contains details about the mandate to create. This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
 	MandateData *SetupIntentMandateDataParams `form:"mandate_data"`
-	// The Stripe account ID for which this SetupIntent is created.
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// The Stripe account ID created for this SetupIntent.
 	OnBehalfOf *string `form:"on_behalf_of"`
 	// ID of the payment method (a PaymentMethod, Card, or saved Source object) to attach to this SetupIntent.
 	PaymentMethod *string `form:"payment_method"`
+	// The ID of the payment method configuration to use with this SetupIntent.
+	PaymentMethodConfiguration *string `form:"payment_method_configuration"`
 	// When included, this hash creates a PaymentMethod that is set as the [`payment_method`](https://stripe.com/docs/api/setup_intents/object#setup_intent_object-payment_method)
 	// value in the SetupIntent.
 	PaymentMethodData *SetupIntentPaymentMethodDataParams `form:"payment_method_data"`
-	// Payment-method-specific configuration for this SetupIntent.
+	// Payment method-specific configuration for this SetupIntent.
 	PaymentMethodOptions *SetupIntentPaymentMethodOptionsParams `form:"payment_method_options"`
-	// The list of payment method types (e.g. card) that this SetupIntent is allowed to set up. If this is not provided, defaults to ["card"].
+	// The list of payment method types (for example, card) that this SetupIntent can set up. If you don't provide this array, it defaults to ["card"].
 	PaymentMethodTypes []*string `form:"payment_method_types"`
-	// The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site. If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme. This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
+	// The URL to redirect your customer back to after they authenticate or cancel their payment on the payment method's app or site. To redirect to a mobile application, you can alternatively supply an application URI scheme. This parameter can only be used with [`confirm=true`](https://stripe.com/docs/api/setup_intents/create#create_setup_intent-confirm).
 	ReturnURL *string `form:"return_url"`
-	// If this hash is populated, this SetupIntent will generate a single_use Mandate on success.
+	// If you populate this hash, this SetupIntent generates a `single_use` mandate after successful completion.
 	SingleUse *SetupIntentSingleUseParams `form:"single_use"`
 	// Indicates how the payment method is intended to be used in the future. If not provided, this value defaults to `off_session`.
 	Usage *string `form:"usage"`
+	// Set to `true` when confirming server-side and using Stripe.js, iOS, or Android client-side SDKs to handle the next actions.
+	UseStripeSDK *bool `form:"use_stripe_sdk"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SetupIntentParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *SetupIntentParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Returns a list of SetupIntents.
@@ -705,8 +758,15 @@ type SetupIntentListParams struct {
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Only return SetupIntents for the customer specified by this customer ID.
 	Customer *string `form:"customer"`
-	// Only return SetupIntents associated with the specified payment method.
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Only return SetupIntents that associate with the specified payment method.
 	PaymentMethod *string `form:"payment_method"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SetupIntentListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // If this is an `acss_debit` PaymentMethod, this hash contains details about the ACSS Debit payment method.
@@ -959,6 +1019,15 @@ type SetupIntentConfirmPaymentMethodDataParams struct {
 	Zip *SetupIntentConfirmPaymentMethodDataZipParams `form:"zip"`
 }
 
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *SetupIntentConfirmPaymentMethodDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 // Confirm that your customer intends to set up the current or
 // provided payment method. For example, you would confirm a SetupIntent
 // when a customer hits the “Save” button on a payment method management
@@ -975,28 +1044,47 @@ type SetupIntentConfirmPaymentMethodDataParams struct {
 // confirmation limit is reached.
 type SetupIntentConfirmParams struct {
 	Params `form:"*"`
-	// This hash contains details about the Mandate to create
+	// ID of the ConfirmationToken used to confirm this SetupIntent.
+	//
+	// If the provided ConfirmationToken contains properties that are also being provided in this request, such as `payment_method`, then the values in this request will take precedence.
+	ConfirmationToken *string `form:"confirmation_token"`
+	// Specifies which fields in the response should be expanded.
+	Expand      []*string                     `form:"expand"`
 	MandateData *SetupIntentMandateDataParams `form:"mandate_data"`
 	// ID of the payment method (a PaymentMethod, Card, or saved Source object) to attach to this SetupIntent.
 	PaymentMethod *string `form:"payment_method"`
 	// When included, this hash creates a PaymentMethod that is set as the [`payment_method`](https://stripe.com/docs/api/setup_intents/object#setup_intent_object-payment_method)
 	// value in the SetupIntent.
 	PaymentMethodData *SetupIntentConfirmPaymentMethodDataParams `form:"payment_method_data"`
-	// Payment-method-specific configuration for this SetupIntent.
+	// Payment method-specific configuration for this SetupIntent.
 	PaymentMethodOptions *SetupIntentPaymentMethodOptionsParams `form:"payment_method_options"`
 	// The URL to redirect your customer back to after they authenticate on the payment method's app or site.
 	// If you'd prefer to redirect to a mobile application, you can alternatively supply an application URI scheme.
 	// This parameter is only used for cards and other redirect-based payment methods.
 	ReturnURL *string `form:"return_url"`
+	// Set to `true` when confirming server-side and using Stripe.js, iOS, or Android client-side SDKs to handle the next actions.
+	UseStripeSDK *bool `form:"use_stripe_sdk"`
 }
 
-// A SetupIntent object can be canceled when it is in one of these statuses: requires_payment_method, requires_confirmation, or requires_action.
+// AddExpand appends a new field to expand.
+func (p *SetupIntentConfirmParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// You can cancel a SetupIntent object when it's in one of these statuses: requires_payment_method, requires_confirmation, or requires_action.
 //
-// Once canceled, setup is abandoned and any operations on the SetupIntent will fail with an error.
+// After you cancel it, setup is abandoned and any operations on the SetupIntent fail with an error.
 type SetupIntentCancelParams struct {
 	Params `form:"*"`
-	// Reason for canceling this SetupIntent. Possible values are `abandoned`, `requested_by_customer`, or `duplicate`
+	// Reason for canceling this SetupIntent. Possible values are: `abandoned`, `requested_by_customer`, or `duplicate`
 	CancellationReason *string `form:"cancellation_reason"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SetupIntentCancelParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Verifies microdeposits on a SetupIntent object.
@@ -1006,10 +1094,21 @@ type SetupIntentVerifyMicrodepositsParams struct {
 	Amounts []*int64 `form:"amounts"`
 	// A six-character code starting with SM present in the microdeposit sent to the bank account.
 	DescriptorCode *string `form:"descriptor_code"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 }
 
-// Settings for automatic payment methods compatible with this Setup Intent
+// AddExpand appends a new field to expand.
+func (p *SetupIntentVerifyMicrodepositsParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Settings for dynamic payment methods compatible with this Setup Intent
 type SetupIntentAutomaticPaymentMethods struct {
+	// Controls whether this SetupIntent will accept redirect-based payment methods.
+	//
+	// Redirect-based payment methods may require your customer to be redirected to a payment method's app or site for authentication or additional steps. To [confirm](https://stripe.com/docs/api/setup_intents/confirm) this SetupIntent, you may be required to provide a `return_url` to redirect customers back to your site after they authenticate or complete the setup.
+	AllowRedirects SetupIntentAutomaticPaymentMethodsAllowRedirects `json:"allow_redirects"`
 	// Automatically calculates compatible payment methods
 	Enabled bool `json:"enabled"`
 }
@@ -1056,6 +1155,14 @@ type SetupIntentNextAction struct {
 	UseStripeSDK            *SetupIntentNextActionUseStripeSDK            `json:"use_stripe_sdk"`
 	VerifyWithMicrodeposits *SetupIntentNextActionVerifyWithMicrodeposits `json:"verify_with_microdeposits"`
 }
+
+// Information about the payment method configuration used for this Setup Intent.
+type SetupIntentPaymentMethodConfigurationDetails struct {
+	// ID of the payment method configuration used.
+	ID string `json:"id"`
+	// ID of the parent payment method configuration used.
+	Parent string `json:"parent"`
+}
 type SetupIntentPaymentMethodOptionsACSSDebitMandateOptions struct {
 	// A URL for custom mandate text
 	CustomMandateURL string `json:"custom_mandate_url"`
@@ -1074,26 +1181,6 @@ type SetupIntentPaymentMethodOptionsACSSDebit struct {
 	MandateOptions *SetupIntentPaymentMethodOptionsACSSDebitMandateOptions `json:"mandate_options"`
 	// Bank account verification method.
 	VerificationMethod SetupIntentPaymentMethodOptionsACSSDebitVerificationMethod `json:"verification_method"`
-}
-type SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSession struct {
-	// Amount of each recurring payment.
-	Amount int64 `json:"amount"`
-	// Currency of each recurring payment.
-	Currency Currency `json:"currency"`
-	// Frequency interval of each recurring payment.
-	Interval SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSessionInterval `json:"interval"`
-	// Frequency indicator of each recurring payment.
-	IntervalCount int64 `json:"interval_count"`
-}
-type SetupIntentPaymentMethodOptionsBLIKMandateOptions struct {
-	// Date at which the mandate expires.
-	ExpiresAfter int64                                                        `json:"expires_after"`
-	OffSession   *SetupIntentPaymentMethodOptionsBLIKMandateOptionsOffSession `json:"off_session"`
-	// Type of the mandate.
-	Type SetupIntentPaymentMethodOptionsBLIKMandateOptionsType `json:"type"`
-}
-type SetupIntentPaymentMethodOptionsBLIK struct {
-	MandateOptions *SetupIntentPaymentMethodOptionsBLIKMandateOptions `json:"mandate_options"`
 }
 
 // Configuration options for setting up an eMandate for cards issued in India.
@@ -1128,20 +1215,29 @@ type SetupIntentPaymentMethodOptionsCard struct {
 	RequestThreeDSecure SetupIntentPaymentMethodOptionsCardRequestThreeDSecure `json:"request_three_d_secure"`
 }
 type SetupIntentPaymentMethodOptionsLink struct {
-	// Token used for persistent Link logins.
+	// [Deprecated] This is a legacy parameter that no longer has any function.
 	PersistentToken string `json:"persistent_token"`
 }
 type SetupIntentPaymentMethodOptionsPaypal struct {
 	// The PayPal Billing Agreement ID (BAID). This is an ID generated by PayPal which represents the mandate between the merchant and the customer.
 	BillingAgreementID string `json:"billing_agreement_id"`
+	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+	Currency Currency `json:"currency"`
 }
 type SetupIntentPaymentMethodOptionsSEPADebitMandateOptions struct{}
 type SetupIntentPaymentMethodOptionsSEPADebit struct {
 	MandateOptions *SetupIntentPaymentMethodOptionsSEPADebitMandateOptions `json:"mandate_options"`
 }
+type SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntry struct {
+	// Settings for configuring manual entry of account details.
+	Mode SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntryMode `json:"mode"`
+}
 type SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnections struct {
+	ManualEntry *SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsManualEntry `json:"manual_entry"`
 	// The list of permissions to request. The `payment_method` permission must be included.
 	Permissions []SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPermission `json:"permissions"`
+	// Data features requested to be retrieved upon account creation.
+	Prefetch []SetupIntentPaymentMethodOptionsUSBankAccountFinancialConnectionsPrefetch `json:"prefetch"`
 	// For webview integrations only. Upon completing OAuth login in the native browser, the user will be redirected to this URL to return to your app.
 	ReturnURL string `json:"return_url"`
 }
@@ -1151,10 +1247,9 @@ type SetupIntentPaymentMethodOptionsUSBankAccount struct {
 	VerificationMethod SetupIntentPaymentMethodOptionsUSBankAccountVerificationMethod `json:"verification_method"`
 }
 
-// Payment-method-specific configuration for this SetupIntent.
+// Payment method-specific configuration for this SetupIntent.
 type SetupIntentPaymentMethodOptions struct {
 	ACSSDebit     *SetupIntentPaymentMethodOptionsACSSDebit     `json:"acss_debit"`
-	BLIK          *SetupIntentPaymentMethodOptionsBLIK          `json:"blik"`
 	Card          *SetupIntentPaymentMethodOptionsCard          `json:"card"`
 	Link          *SetupIntentPaymentMethodOptionsLink          `json:"link"`
 	Paypal        *SetupIntentPaymentMethodOptionsPaypal        `json:"paypal"`
@@ -1163,25 +1258,24 @@ type SetupIntentPaymentMethodOptions struct {
 }
 
 // A SetupIntent guides you through the process of setting up and saving a customer's payment credentials for future payments.
-// For example, you could use a SetupIntent to set up and save your customer's card without immediately collecting a payment.
+// For example, you can use a SetupIntent to set up and save your customer's card without immediately collecting a payment.
 // Later, you can use [PaymentIntents](https://stripe.com/docs/api#payment_intents) to drive the payment flow.
 //
-// Create a SetupIntent as soon as you're ready to collect your customer's payment credentials.
-// Do not maintain long-lived, unconfirmed SetupIntents as they may no longer be valid.
-// The SetupIntent then transitions through multiple [statuses](https://stripe.com/docs/payments/intents#intent-statuses) as it guides
+// Create a SetupIntent when you're ready to collect your customer's payment credentials.
+// Don't maintain long-lived, unconfirmed SetupIntents because they might not be valid.
+// The SetupIntent transitions through multiple [statuses](https://stripe.com/docs/payments/intents#intent-statuses) as it guides
 // you through the setup process.
 //
 // Successful SetupIntents result in payment credentials that are optimized for future payments.
-// For example, cardholders in [certain regions](https://stripe.com/guides/strong-customer-authentication) may need to be run through
-// [Strong Customer Authentication](https://stripe.com/docs/strong-customer-authentication) at the time of payment method collection
-// in order to streamline later [off-session payments](https://stripe.com/docs/payments/setup-intents).
-// If the SetupIntent is used with a [Customer](https://stripe.com/docs/api#setup_intent_object-customer), upon success,
-// it will automatically attach the resulting payment method to that Customer.
+// For example, cardholders in [certain regions](https://stripe.com/guides/strong-customer-authentication) might need to be run through
+// [Strong Customer Authentication](https://stripe.com/docs/strong-customer-authentication) during payment method collection
+// to streamline later [off-session payments](https://stripe.com/docs/payments/setup-intents).
+// If you use the SetupIntent with a [Customer](https://stripe.com/docs/api#setup_intent_object-customer),
+// it automatically attaches the resulting payment method to that Customer after successful setup.
 // We recommend using SetupIntents or [setup_future_usage](https://stripe.com/docs/api#payment_intent_object-setup_future_usage) on
-// PaymentIntents to save payment methods in order to prevent saving invalid or unoptimized payment methods.
+// PaymentIntents to save payment methods to prevent saving invalid or unoptimized payment methods.
 //
-// By using SetupIntents, you ensure that your customers experience the minimum set of required friction,
-// even as regulations change over time.
+// By using SetupIntents, you can reduce friction for your customers, even as regulations change over time.
 //
 // Related guide: [Setup Intents API](https://stripe.com/docs/payments/setup-intents)
 type SetupIntent struct {
@@ -1192,7 +1286,7 @@ type SetupIntent struct {
 	//
 	// It can only be used for this Stripe Account's own money movement flows like InboundTransfer and OutboundTransfers. It cannot be set to true when setting up a PaymentMethod for a Customer, and defaults to false when attaching a PaymentMethod to a Customer.
 	AttachToSelf bool `json:"attach_to_self"`
-	// Settings for automatic payment methods compatible with this Setup Intent
+	// Settings for dynamic payment methods compatible with this Setup Intent
 	AutomaticPaymentMethods *SetupIntentAutomaticPaymentMethods `json:"automatic_payment_methods"`
 	// Reason for cancellation of this SetupIntent, one of `abandoned`, `requested_by_customer`, or `duplicate`.
 	CancellationReason SetupIntentCancellationReason `json:"cancellation_reason"`
@@ -1232,7 +1326,9 @@ type SetupIntent struct {
 	OnBehalfOf *Account `json:"on_behalf_of"`
 	// ID of the payment method used with this SetupIntent.
 	PaymentMethod *PaymentMethod `json:"payment_method"`
-	// Payment-method-specific configuration for this SetupIntent.
+	// Information about the payment method configuration used for this Setup Intent.
+	PaymentMethodConfigurationDetails *SetupIntentPaymentMethodConfigurationDetails `json:"payment_method_configuration_details"`
+	// Payment method-specific configuration for this SetupIntent.
 	PaymentMethodOptions *SetupIntentPaymentMethodOptions `json:"payment_method_options"`
 	// The list of payment method types (e.g. card) that this SetupIntent is allowed to set up.
 	PaymentMethodTypes []string `json:"payment_method_types"`

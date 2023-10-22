@@ -6,17 +6,62 @@
 
 package stripe
 
+import "encoding/json"
+
+type SubscriptionItemTrialType string
+
+// List of values that SubscriptionItemTrialType can take
+const (
+	SubscriptionItemTrialTypeFree SubscriptionItemTrialType = "free"
+	SubscriptionItemTrialTypePaid SubscriptionItemTrialType = "paid"
+)
+
 // Returns a list of your subscription items for a given subscription.
 type SubscriptionItemListParams struct {
 	ListParams `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 	// The ID of the subscription whose items will be retrieved.
 	Subscription *string `form:"subscription"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SubscriptionItemListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period. When updating, pass an empty string to remove previously-defined thresholds.
 type SubscriptionItemBillingThresholdsParams struct {
 	// Number of units that meets the billing threshold to advance the subscription to a new billing period (e.g., it takes 10 $5 units to meet a $50 [monetary threshold](https://stripe.com/docs/api/subscriptions/update#update_subscription-billing_thresholds-amount_gte))
 	UsageGTE *int64 `form:"usage_gte"`
+}
+
+// Time span for the redeemed discount.
+type SubscriptionItemDiscountDiscountEndDurationParams struct {
+	// Specifies a type of interval unit. Either `day`, `week`, `month` or `year`.
+	Interval *string `form:"interval"`
+	// The number of intervals, as an whole number greater than 0. Stripe multiplies this by the interval type to get the overall duration.
+	IntervalCount *int64 `form:"interval_count"`
+}
+
+// Details to determine how long the discount should be applied for.
+type SubscriptionItemDiscountDiscountEndParams struct {
+	// Time span for the redeemed discount.
+	Duration *SubscriptionItemDiscountDiscountEndDurationParams `form:"duration"`
+	// A precise Unix timestamp for the discount to end. Must be in the future.
+	Timestamp *int64 `form:"timestamp"`
+	// The type of calculation made to determine when the discount ends.
+	Type *string `form:"type"`
+}
+
+// The coupons to redeem into discounts for the subscription item.
+type SubscriptionItemDiscountParams struct {
+	// ID of the coupon to create a new discount for.
+	Coupon *string `form:"coupon"`
+	// ID of an existing discount on the object (or one of its ancestors) to reuse.
+	Discount *string `form:"discount"`
+	// Details to determine how long the discount should be applied for.
+	DiscountEnd *SubscriptionItemDiscountDiscountEndParams `form:"discount_end"`
 }
 
 // The recurring components of a price such as `interval` and `interval_count`.
@@ -43,6 +88,14 @@ type SubscriptionItemPriceDataParams struct {
 	UnitAmountDecimal *float64 `form:"unit_amount_decimal,high_precision"`
 }
 
+// Options that configure the trial on the subscription item.
+type SubscriptionItemTrialParams struct {
+	// List of price IDs which, if present on the subscription following a paid trial, constitute opting-in to the paid trial.
+	ConvertsTo []*string `form:"converts_to"`
+	// Determines the type of trial for this item.
+	Type *string `form:"type"`
+}
+
 // Adds a new item to an existing subscription. No existing items will be changed or replaced.
 type SubscriptionItemParams struct {
 	Params `form:"*"`
@@ -50,6 +103,12 @@ type SubscriptionItemParams struct {
 	BillingThresholds *SubscriptionItemBillingThresholdsParams `form:"billing_thresholds"`
 	// Delete all usage for the given subscription item. Allowed only when the current plan's `usage_type` is `metered`.
 	ClearUsage *bool `form:"clear_usage"`
+	// The coupons to redeem into discounts for the subscription item.
+	Discounts []*SubscriptionItemDiscountParams `form:"discounts"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
 	// Only supported on update
 	// Indicates if a customer is on or off-session while an invoice payment is attempted.
 	OffSession *bool `form:"off_session"`
@@ -77,6 +136,22 @@ type SubscriptionItemParams struct {
 	Subscription *string `form:"subscription"`
 	// A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the [`default_tax_rates`](https://stripe.com/docs/api/subscriptions/create#create_subscription-default_tax_rates) on the Subscription. When updating, pass an empty string to remove previously-defined tax rates.
 	TaxRates []*string `form:"tax_rates"`
+	// Options that configure the trial on the subscription item.
+	Trial *SubscriptionItemTrialParams `form:"trial"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SubscriptionItemParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *SubscriptionItemParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // For the specified subscription item, returns a list of summary objects. Each object in the list provides usage information that's been summarized from multiple usage records and over a subscription billing period (e.g., 15 usage records in the month of September).
@@ -85,12 +160,26 @@ type SubscriptionItemParams struct {
 type SubscriptionItemUsageRecordSummariesParams struct {
 	ListParams       `form:"*"`
 	SubscriptionItem *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *SubscriptionItemUsageRecordSummariesParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Define thresholds at which an invoice will be sent, and the related subscription advanced to a new billing period
 type SubscriptionItemBillingThresholds struct {
 	// Usage threshold that triggers the subscription to create an invoice
 	UsageGTE int64 `json:"usage_gte"`
+}
+
+// Options that configure the trial on the subscription item.
+type SubscriptionItemTrial struct {
+	// List of price IDs which, if present on the subscription following a paid trial, constitute opting-in to the paid trial.
+	ConvertsTo []string                  `json:"converts_to"`
+	Type       SubscriptionItemTrialType `json:"type"`
 }
 
 // Subscription items allow you to create customer subscriptions with more than
@@ -102,6 +191,8 @@ type SubscriptionItem struct {
 	// Time at which the object was created. Measured in seconds since the Unix epoch.
 	Created int64 `json:"created"`
 	Deleted bool  `json:"deleted"`
+	// The discounts applied to the subscription item. Subscription item discounts are applied before subscription discounts. Use `expand[]=discounts` to expand each discount.
+	Discounts []*Discount `json:"discounts"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
@@ -130,6 +221,8 @@ type SubscriptionItem struct {
 	Subscription string `json:"subscription"`
 	// The tax rates which apply to this `subscription_item`. When set, the `default_tax_rates` on the subscription do not apply to this `subscription_item`.
 	TaxRates []*TaxRate `json:"tax_rates"`
+	// Options that configure the trial on the subscription item.
+	Trial *SubscriptionItemTrial `json:"trial"`
 }
 
 // SubscriptionItemList is a list of SubscriptionItems as retrieved from a list endpoint.
@@ -137,4 +230,23 @@ type SubscriptionItemList struct {
 	APIResource
 	ListMeta
 	Data []*SubscriptionItem `json:"data"`
+}
+
+// UnmarshalJSON handles deserialization of a SubscriptionItem.
+// This custom unmarshaling is needed because the resulting
+// property may be an id or the full struct if it was expanded.
+func (s *SubscriptionItem) UnmarshalJSON(data []byte) error {
+	if id, ok := ParseID(data); ok {
+		s.ID = id
+		return nil
+	}
+
+	type subscriptionItem SubscriptionItem
+	var v subscriptionItem
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	*s = SubscriptionItem(v)
+	return nil
 }

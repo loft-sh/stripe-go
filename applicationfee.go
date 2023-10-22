@@ -15,19 +15,34 @@ type ApplicationFeeListParams struct {
 	Charge       *string           `form:"charge"`
 	Created      *int64            `form:"created"`
 	CreatedRange *RangeQueryParams `form:"created"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *ApplicationFeeListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
 }
 
 // Retrieves the details of an application fee that your account has collected. The same information is returned when refunding the application fee.
 type ApplicationFeeParams struct {
 	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
 }
+
+// AddExpand appends a new field to expand.
+func (p *ApplicationFeeParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 type ApplicationFee struct {
 	APIResource
 	// ID of the Stripe account this fee was taken from.
 	Account *Account `json:"account"`
-	// Amount earned, in %s.
+	// Amount earned, in cents (or local equivalent).
 	Amount int64 `json:"amount"`
-	// Amount in %s refunded (can be less than the amount attribute on the fee if a partial refund was issued)
+	// Amount in cents (or local equivalent) refunded (can be less than the amount attribute on the fee if a partial refund was issued)
 	AmountRefunded int64 `json:"amount_refunded"`
 	// ID of the Connect application that earned the fee.
 	Application *Application `json:"application"`
